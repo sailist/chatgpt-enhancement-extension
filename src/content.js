@@ -136,8 +136,9 @@ function divToMarkdown(div) {
 }
 
 function makeButton(name) {
-  bt = document.createElement("buttom");
+  bt = document.createElement("button");
   bt.className = "btn relative btn-neutral border-0 md:border";
+  bt.classList.add("bt-" + name);
   bt.textContent = name;
   bt.style.cursor = "pointer";
   return bt;
@@ -174,31 +175,53 @@ function injectTab(markdown_node) {
   wrap.appendChild(prebt);
   wrap.appendChild(cpbt);
 
+  function btToParent(bt) {
+    return bt.parentElement.parentElement;
+  }
+
   cpbt.addEventListener("click", (e) => {
     // console.log(e);
     // console.log(cpbt.parentElement.parentElement.querySelector("pre.raw-text"));
-    content = e.srcElement.parentElement.parentElement
+    content = btToParent(e.srcElement)
       .querySelector("pre.raw-text")
       .querySelector("p");
     console.log(content.textContent);
     copyTextToClipboard(content.textContent);
   });
 
-  mdbt.addEventListener("click", () => {
-    mdbt.style.backgroundColor = "gray";
-    prebt.style.backgroundColor = null;
+  mdbt.addEventListener("click", (e) => {
+    mdbt_ = e.srcElement;
+    prebt_ = mdbt_.parentElement.querySelector("button.bt-preview");
+    mdbt_.style.backgroundColor = "gray";
+    prebt_.style.backgroundColor = null;
+
+    markdown_node = btToParent(e.srcElement).querySelector("div.markdown");
+    pre = btToParent(e.srcElement).querySelector("pre.raw-text");
+
     markdown_node.style.display = "none";
     pre.style.display = "block";
   });
 
-  prebt.addEventListener("click", () => {
-    prebt.style.backgroundColor = "gray";
-    mdbt.style.backgroundColor = null;
+  prebt.addEventListener("click", (e) => {
+    prebt_ = e.srcElement;
+    mdbt_ = prebt_.parentElement.querySelector("button.bt-markdown");
+
+    prebt_.style.backgroundColor = "gray";
+    mdbt_.style.backgroundColor = null;
+
+    markdown_node = btToParent(e.srcElement).querySelector("div.markdown");
+    pre = btToParent(e.srcElement).querySelector("pre.raw-text");
+
     pre.style.display = "none";
     markdown_node.style.display = "block";
   });
 
   markdown_node.insertAdjacentElement("beforebegin", wrap);
+
+  old_pre = markdown_node.parentElement.querySelector("pre.raw-text");
+  if (old_pre) {
+    old_pre.remove();
+  }
 
   pre = document.createElement("pre");
   pre.className = "raw-text";
