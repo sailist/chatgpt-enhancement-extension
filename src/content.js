@@ -19,7 +19,7 @@ function tableToMarkdown(table) {
   function nodeListToList(nodeList) {
     var list = [];
     for (var i = 0; i < nodeList.length; i++) {
-      list.push(nodeList[i].textContent);
+      list.push(divToMarkdown(nodeList[i]));
     }
     return list.join(" | ");
   }
@@ -74,18 +74,18 @@ function divToMarkdown(div) {
           result += "###### " + divToMarkdown(node) + "\n\n";
           break;
         case "code":
-          result += "`" + divToMarkdown(node) + "`";
+          result += " `" + divToMarkdown(node) + "` ";
           break;
         case "del":
-          result += "~~" + divToMarkdown(node) + "~~";
+          result += " ~~" + divToMarkdown(node) + "~~ ";
           break;
         case "strong":
         case "b":
-          result += "**" + divToMarkdown(node) + "**";
+          result += " **" + divToMarkdown(node) + "** ";
           break;
         case "em":
         case "i":
-          result += "_" + divToMarkdown(node) + "_";
+          result += " _" + divToMarkdown(node) + "_ ";
           break;
         case "a":
           result += "[" + divToMarkdown(node) + "](" + node.href + ")";
