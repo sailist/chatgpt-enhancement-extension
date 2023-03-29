@@ -1,0 +1,42 @@
+{
+  "manifest_version": 3,
+  "name": "ChatGPT Markdown and PDF Extension",
+  "version": "1.0",
+  "description": "ChatGPT enhanced, support copy raw markdown, load pdf file.",
+  "options_ui": {
+    "page": "options.html"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "icons": {
+    "16": "images/icon-16.png",
+    "32": "images/icon-32.png",
+    "48": "images/icon-48.png",
+    "128": "images/icon-128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://chat.openai.com/*",
+        "https://freechatgpt.chat/*"
+      ],
+      "js": [
+        "js/vendor.js",
+        "js/content_script.js"
+      ]
+    }
+  ],
+  "background": {
+    "service_worker": "js/background.js"
+  },
+  "permissions": [
+    "storage",
+    "scripting",
+    "activeTab",
+    "tabs"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ]
+}
