@@ -1,6 +1,6 @@
 # chatgpt-markdown-and-pdf-extension
 
-![](src/images/icon-128.png)
+![](images/small_promo.jpg)
 
 To provide additional features to enhance the ChatGPT experience, including converting replies to markdown strings, uploading files, and automatically asking questions based on regular expressions.
 
@@ -8,8 +8,6 @@ To provide additional features to enhance the ChatGPT experience, including conv
 
 For better copy experimence.
 ![](images/preview.png)
-
-> See [chat.md](./chat.md) for this response.
 
 ## Load PDF and prompting questions based on regexp
 
