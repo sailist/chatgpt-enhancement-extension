@@ -32,9 +32,7 @@
   },
   "permissions": [
     "storage",
-    "scripting",
-    "activeTab",
-    "tabs"
+    "scripting"
   ],
   "host_permissions": [
     "<all_urls>"

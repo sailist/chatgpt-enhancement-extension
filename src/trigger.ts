@@ -4,6 +4,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc =
 import { PDFDocumentProxy } from "pdfjs-dist/types/src/display/api";
 import { makeButton, copyTextToClipboard, applyStyle } from "./tools";
 import { divToMarkdown } from "./markdown";
+import { AppState, defaultState, PatternPair } from "./components/prompt";
 export class GPTGroup {
   prompt?: HTMLDivElement;
   response?: HTMLDivElement;
@@ -120,7 +121,14 @@ export class GPTPageHandler {
     // console.log(this);
     if (this.textarea && this.sendBt) {
       this.textarea.value = value;
-      this.sendBt.click();
+      // this.sendBt.click();
+      const enterKeyEvent = new KeyboardEvent("keydown", {
+        keyCode: 13,
+        key: "Enter",
+      });
+      this.textarea.dispatchEvent(enterKeyEvent);
+    } else {
+      console.log(this);
     }
   }
   copyResponse() {}
@@ -150,6 +158,8 @@ export class GPTPageHandler {
   }
   onTextareaCreate(el: HTMLTextAreaElement) {
     this.textarea = el;
+    // hack
+    el.placeholder = "Send a message & Drop a PDF file";
     this.currentEventHandler?.onTextareaCreate(el);
     this.eventListeners["textarea create"]?.forEach((item) => {
       item.onTextareaCreate(el);
@@ -291,13 +301,51 @@ export class PDFProcess implements GPTEventListener {
         chrome.storage.sync.get(
           {
             prompt: "Summary the content",
+            promptGroup: defaultState,
+          } as {
+            prompt: string;
+            promptGroup: AppState;
           },
           (items) => {
+            console.log(items.promptGroup);
+
             var page_str = page_content.items
               .map((i) => (i as any).str)
               .join(" ");
 
-            gptPage.send(items.prompt + page_str);
+            const promptGroup = items.promptGroup as AppState;
+            let matchedPrompt = promptGroup.patternPair
+              .map((item) => {
+                const pattern = new RegExp(item.pattern);
+                return {
+                  pattern: pattern,
+                  match: pattern.exec(page_str.toLowerCase()),
+                  prompt: item.prompt,
+                };
+              })
+              .filter((item) => {
+                console.log(item);
+                return item.match;
+              });
+
+            let prompt_str = "";
+            if (matchedPrompt.length == 0) {
+              prompt_str =
+                " - Summary the content, prompting 3 professional question and then answer it";
+            }
+            prompt_str =
+              matchedPrompt
+                .map((item) => {
+                  let prompt = item.prompt;
+                  for (var i = 1; i < item.match!.length; i++) {
+                    prompt = prompt.replace(`$${i}`, item.match![i]);
+                  }
+                  return ` - ${prompt}`;
+                })
+                .join("\n") + "\n";
+            prompt_str = `\n${promptGroup.globalPrompt}, the response should in ${promptGroup.language}\n${prompt_str}
+            `;
+            gptPage.send(page_str + prompt_str);
           }
         );
       });
@@ -417,6 +465,9 @@ export class MarkdownButton implements GPTEventListener {
     this.makeMarkdownWrap(gptGroup);
   }
   onStopGeneration(): void {}
-  onTextareaCreate(el: HTMLTextAreaElement): void {}
+  onTextareaCreate(el: HTMLTextAreaElement): void {
+    el.placeholder = "Send a message & Drop a PDF file";
+    console.log("change placeholder");
+  }
   onSendStart(): void {}
 }
