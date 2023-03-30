@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "ChatGPT Markdown and PDF Extension",
-  "version": "1.0",
+  "version": "1.1",
   "description": "ChatGPT enhanced, support copy raw markdown, load pdf file.",
   "options_ui": {
     "page": "options.html"
@@ -24,6 +24,9 @@
       "js": [
         "js/vendor.js",
         "js/content_script.js"
+      ],
+      "css": [
+        "output.css"
       ]
     }
   ],
