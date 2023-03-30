@@ -435,7 +435,10 @@ export class MarkdownButton implements GPTEventListener {
   }
 
   makeMarkdownWrap(gptGroup: GPTGroup) {
-    if (gptGroup.response!.classList.contains("remarked")) {
+    if (
+      gptGroup.response!.classList.contains("remarked") &&
+      gptGroup.response!.querySelector(".raw-text")
+    ) {
       return;
     }
 

@@ -80,6 +80,17 @@ const Sidebar: React.FC = () => {
                             )
                             handler.onResponse(new GPTGroup(group_node as HTMLDivElement))
                             return
+
+                        } else if (mutation.target.firstElementChild
+                            && mutation.target.firstElementChild.firstElementChild
+                            && mutation.removedNodes.length == 0
+                            && mutation.target.firstElementChild.firstElementChild.classList.contains('markdown')) {
+                            let div_flex_node = mutation.target;
+                            markdown_node = div_flex_node.querySelector('.markdown')
+                            let group_node = (
+                                markdown_node!.parentElement!.parentElement!.parentElement!.parentElement!.parentElement!
+                            )
+                            handler.onResponse(new GPTGroup(group_node as HTMLDivElement))
                         } else if (mutation.target.textContent == 'Stop generating') {
                             mutation.target.querySelector('button')?.addEventListener('click', () => {
                                 handler.onStopGeneration()

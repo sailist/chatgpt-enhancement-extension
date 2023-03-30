@@ -115,43 +115,47 @@ const App = () => {
         <>
             {/* <div className="p-2 bg-gray-100">{`Status: ${state.status}`}</div> */}
             <Dropdown defaultLang={state.language} onChange={handleLangChange}></Dropdown>
-            {state.patternPair.map((inputRow, index) => (
-                <div key={index} className="col-span-full py-1 border-b border-gray-200">
-                    <div className="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-600 sm:max-w-md">
-                        <input
-                            type="text"
-                            placeholder="regexp pattern"
-                            value={inputRow.pattern}
-                            onChange={(event) => handleInputChange(event, index, 'pattern')}
-                            className="text-sm py-1 flex-none px-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-300"
-                        />
-                        <button
-                            onClick={() => handleDeleteRow(index)}
-                            className="text-sm py-1 px-2 bg-red-500 text-white rounded flex-1"
-                        >
-                            Del -
-                        </button>
+            <div className='my-2'>
+                {state.patternPair.map((inputRow, index) => (
+                    <div key={index} className='border rounded p-1 my-2'>
+                        <div className='grid grid-cols-6 gap-x-4 gap-y-2 '>
+                            <input
+                                type="text"
+                                placeholder="regexp pattern"
+                                value={inputRow.pattern}
+                                onChange={(event) => handleInputChange(event, index, 'pattern')}
+                                className="text-gray-700 dark:text-gray-500 text-sm col-span-5 border-0 p-1 bg-transparent p-0 focus:ring-0 focus-visible:ring-0"
+                            />
+                            <div>
+                                <button
+                                    onClick={() => handleDeleteRow(index)}
+                                    className="text-sm px-2 rounded-full bg-gray-200 border-0 focus:outline-none ring-inset text-white"
+                                >
+                                    <span className='rounded-full'>&times;</span>
+                                </button>
+                            </div>
+                            <div className='col-span-6 border-t'></div>
+                            <textarea
+                                placeholder="prompt"
+                                value={inputRow.prompt}
+                                onChange={(event) => handleInputChange(event, index, 'prompt')}
+                                className="text-gray-700 dark:text-gray-500 col-span-6 p-1 resize-y w-ful text-sm border-0 bg-transparent p-0 pr-7 focus:ring-0 focus-visible:ring-0"
+                            />
+                        </div>
                     </div>
-                    <textarea
-                        placeholder="prompt"
-                        value={inputRow.prompt}
-                        onChange={(event) => handleInputChange(event, index, 'prompt')}
-                        className="resize text-sm w-full py-1 px-2 pt-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-300"
-                    />
-
-                </div>
-            ))}
+                ))}
+            </div>
             <div className="py-2 border-b border-gray-200">
 
                 <button
                     onClick={handleAddRow}
-                    className="w-3/4 px-2 py-2 bg-blue-500 text-white rounded"
+                    className="w-3/4 px-2 py-2 bg-blue-500 text-white"
                 >
                     Add +
                 </button>
                 <button
                     onClick={handleReset}
-                    className="w-1/4 px-2 py-2 bg-gray-500 text-white rounded"
+                    className="w-1/4 px-2 py-2 bg-gray-500 text-white"
                 >
                     Reset +
                 </button>

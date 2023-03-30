@@ -6,12 +6,16 @@ To provide additional features to enhance the ChatGPT experience, including conv
 
 ## Display Markdown text instead of HTML results
 
-For better copy experimence.
+For better copy experimence, especially for code block, here is an example:
 ![](images/preview.png)
 
 ## Load PDF and prompting questions based on regexp
 
-![](images/pdf_preview.png)
+- Step 1. Write your own regexp-supported pattern and prompt
+- Step 2. Drop a PDF file in the textarea
+- Step 3. Wait for response
+
+![](images/pdf_preview.jpg)
 
 # How to install
 
