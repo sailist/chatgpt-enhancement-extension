@@ -15,6 +15,28 @@ For better copy experimence.
 
 ![](images/pdf_preview.png)
 
+# How to install
+
+## Install from Chrome Web Store
+
+> currently pending review
+
+## Install locally
+
+```
+git clone --depth=1 https://github.com/sailist/chatgpt-markdown-extension
+```
+
+In Chrome/Arc/Edge browser:
+
+- Go to the extensions management page
+- Turn on `Developer mode`
+- Click on `Load unpacked` among the buttons that appear
+- Load the `./dist` folder or drag `./dist.crx` into the extensions management page.
+- Refresh the ChatGPT page
+
+> If you have any question about load extension, try asking ChatGPT
+
 # Acknowledge
 
-Thanks for the [chrome-extension-typescript-starter scanfold](https://github.com/chibat/chrome-extension-typescript-starter) and ChatGPT ❤.
+Thanks for the [chrome-extension-typescript-starter](https://github.com/chibat/chrome-extension-typescript-starter) scanfold and ChatGPT ❤.
