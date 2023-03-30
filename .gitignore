@@ -105,3 +105,4 @@ dist
 
 *.pem
 .DS_store
+*.zip
