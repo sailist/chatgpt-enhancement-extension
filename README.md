@@ -17,6 +17,9 @@ For better copy experimence, especially for code block, here is an example:
 
 ![](images/pdf_preview.jpg)
 
+
+![](images/overview-pdf.gif)
+
 # How to install
 
 ## Install from Chrome Web Store
