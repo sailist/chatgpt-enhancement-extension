@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import App from './components/prompt';
-import Prompt from './components/prompt';
-import Example from './components/temp_form';
 import { GPTGroup, GPTPageHandler, MarkdownButton, PDFProcess } from './trigger';
 
 interface Styles {
@@ -70,8 +68,10 @@ const Sidebar: React.FC = () => {
                     if (mutation.target.classList) {
                         var markdown_node = null;
                         if (mutation.type == 'attributes'
+                            && mutation.attributeName == 'class' // 保证跟 button 切换时 display 样式改变无关
                             && mutation.target.classList.contains("markdown")
-                            && !mutation.target.classList.contains("result-streaming")) {
+                            && !mutation.target.classList.contains("result-streaming") // 保证不是在加载中
+                        ) {
                             console.log(mutation)
                             markdown_node = mutation.target;
                             console.log('End response');
@@ -84,12 +84,15 @@ const Sidebar: React.FC = () => {
                         } else if (mutation.target.firstElementChild
                             && mutation.target.firstElementChild.firstElementChild
                             && mutation.removedNodes.length == 0
-                            && mutation.target.firstElementChild.firstElementChild.classList.contains('markdown')) {
+                            && mutation.target.firstElementChild.firstElementChild.classList.contains('markdown')
+                            && !mutation.target.firstElementChild.firstElementChild.classList.contains('result-streaming') // 保证不是在加载中
+                        ) {
                             let div_flex_node = mutation.target;
                             markdown_node = div_flex_node.querySelector('.markdown')
                             let group_node = (
                                 markdown_node!.parentElement!.parentElement!.parentElement!.parentElement!.parentElement!
                             )
+                            console.log('End response v2');
                             handler.onResponse(new GPTGroup(group_node as HTMLDivElement))
                         } else if (mutation.target.textContent == 'Stop generating') {
                             mutation.target.querySelector('button')?.addEventListener('click', () => {
