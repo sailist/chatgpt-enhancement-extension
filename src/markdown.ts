@@ -14,6 +14,13 @@ function preCodeToMarkdown(pre: HTMLElement) {
   return markdown;
 }
 
+function padLeft(s: string, n: number): string {
+  return s
+    .split("\n")
+    .map((item) => " ".repeat(n) + item)
+    .join("\n");
+}
+
 function tableToMarkdown(table: HTMLElement) {
   function nodeListToList(nodeList: NodeList) {
     var list = [];
@@ -37,7 +44,7 @@ function tableToMarkdown(table: HTMLElement) {
   return markdown;
 }
 
-export function divToMarkdown(div: HTMLElement) {
+export function divToMarkdown(div: HTMLElement, level: number = 0) {
   var result = "";
 
   // 处理 div 元素的子元素
@@ -107,26 +114,46 @@ export function divToMarkdown(div: HTMLElement) {
         case "br":
           result += "  \n";
           break;
+
         case "ul":
           for (var j = 0; j < node.childNodes.length; j++) {
+            const child = node.childNodes[j];
+            if (level > 0) {
+              result += "\n";
+            }
             result +=
-              "- " + divToMarkdown(node.childNodes[j] as HTMLElement) + "\n";
+              "    ".repeat(level) +
+              "- " +
+              divToMarkdown(node.childNodes[j] as HTMLElement, level + 1);
+
+            if (level === 0) {
+              result += "\n";
+            }
           }
-          result += "\n";
+          if (level === 0) {
+            result += "\n";
+          }
           break;
         case "ol":
           for (var j = 0; j < node.childNodes.length; j++) {
+            if (level > 0) {
+              result += "\n";
+            }
             result +=
-              j +
-              1 +
+              "    ".repeat(level) +
+              (j + 1) +
               ". " +
-              divToMarkdown(node.childNodes[j] as HTMLElement) +
-              "\n";
+              divToMarkdown(node.childNodes[j] as HTMLElement, level + 1);
+            if (level === 0) {
+              result += "\n";
+            }
           }
-          result += "\n";
+          if (level === 0) {
+            result += "\n";
+          }
           break;
         case "li":
-          result += divToMarkdown(node) + "\n";
+          result += divToMarkdown(node, level) + "\n";
           break;
         case "blockquote":
           result += "> " + divToMarkdown(node) + "\n\n";
