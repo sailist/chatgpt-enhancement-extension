@@ -30,18 +30,6 @@ const Dropdown: React.FC<Props> = ({ defaultLang, onChange }) => {
                 <option value="Chinese">中文</option>
                 <option value="English">English</option>
             </select>
-            {/* <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                <svg
-                    className="fill-current h-4 w-4"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 20 20"
-                >
-                    <path
-                        fillRule="evenodd"
-                        d="M12.707 7.293a1 1 0 0 0-1.414 0L10 8.586 8.707 7.293a1 1 0 1 0-1.414 1.414l2 2a1 1 0 0 0 1.414 0l2-2a1 1 0 0 0 0-1.414zM7.293 12.707a1 1 0 0 0 1.414 0L10 11.414l1.293 1.293a1 1 0 0 0 1.414-1.414l-2-2a1 1 0 0 0-1.414 0l-2 2a1 1 0 0 0 0 1.414z"
-                    />
-                </svg>
-            </div> */}
         </div>
     );
 };

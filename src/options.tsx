@@ -1,14 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 
-let defaultPrompt = `检查以下论文内容，用以下逻辑回复：
-如果包含 Introduction，总结该方法；
-如果包含 Related work，提取该论文对应的领域，用逗号分隔；
-如果包含 Methods，总结该论文使用的各个方法的组成部分，用 Markdown list 列出，在最后一行提取论文中定义的名词，用逗号分隔；
-如果包含 Experiment，提取该论文用到的数据集，用逗号分隔，并输出该方法做了哪些对比实验证明有效性，用Markdown list 列出；
-如果包含 Reference，输出 "结束"。
+let defaultPrompt = ``
 
-`
 const Options = () => {
   const [prompt, setPrompt] = useState<string>("");
   const [status, setStatus] = useState<string>("");

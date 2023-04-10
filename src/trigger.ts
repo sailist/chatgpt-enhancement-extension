@@ -186,6 +186,7 @@ export class PDFProcess implements GPTEventListener {
   plugin_name: string = "pdf_process";
   gptpage?: GPTPageHandler;
   pdf?: PDFDocumentProxy;
+  text?: string[];
   stoped: boolean = false;
   process: number = 0;
 
@@ -212,8 +213,14 @@ export class PDFProcess implements GPTEventListener {
         e.stopPropagation();
         this.style.border = "2px dashed #ccc";
         if (e.dataTransfer) {
-          var file = e.dataTransfer.files[0];
-          that.onDropFile(file);
+          const file = e.dataTransfer.files[0];
+          const fn = file.name.toLowerCase();
+          if (fn.endsWith("pdf")) {
+            that.onDropFile(file);
+          } else if (fn.endsWith("pptx")) {
+          } else {
+            that.onDropText(file);
+          }
         } else {
           debugger;
         }
@@ -238,7 +245,11 @@ export class PDFProcess implements GPTEventListener {
     const that = this;
     that.process++;
     setTimeout(() => {
-      that.sendNext();
+      if (that.pdf) {
+        that.sendNextPage();
+      } else if (that.text) {
+        that.sendNextText();
+      }
     }, 2000);
   }
   onSendStart() {
@@ -248,10 +259,24 @@ export class PDFProcess implements GPTEventListener {
     // throw new Error("Method not implemented.");
     this.stoped = true;
   }
-
-  onDropFile(file: File) {
+  onDropText(file: File) {
     console.log("onDropFile");
     console.log(file);
+    const that = this;
+    var reader = new FileReader();
+
+    reader.onload = function (event) {
+      var textContent = event.target!.result as string;
+      that.text = textContent.split("\n\n");
+      // 这里可以对读取到的文本内容进行处理
+      that.pdf = undefined;
+      that.stoped = false;
+      that.process = -1;
+      that.sendNextText();
+    };
+    reader.readAsText(file);
+  }
+  onDropFile(file: File) {
     const that = this;
     var reader = new FileReader();
 
@@ -263,10 +288,11 @@ export class PDFProcess implements GPTEventListener {
       loadingTask.promise.then(
         function (pdf) {
           that.pdf = pdf;
+          that.text = undefined;
           that.stoped = false;
           that.process = 0;
           console.log("load pdf success");
-          that.sendNext();
+          that.sendNextPage();
         },
         function (reason) {
           console.error(reason);
@@ -276,7 +302,77 @@ export class PDFProcess implements GPTEventListener {
     reader.readAsArrayBuffer(file);
   }
 
-  sendNext() {
+  sendNextText() {
+    const gptPage = this.gptpage!;
+    gptPage.vote(this);
+    if (this.stoped) {
+      console.log("if (this.stoped) {");
+      return;
+    }
+
+    if (!this.text) {
+      console.log("if (!this.pdf) {");
+      return;
+    }
+
+    let page_n = this.process;
+    if (page_n >= this.text.length) {
+      console.log("if (page_n >= this.pdf.numPages) {");
+      return;
+    }
+
+    const that = this;
+    chrome.storage.sync.get(
+      {
+        prompt: "Summary the content",
+        promptGroup: defaultState,
+      } as {
+        prompt: string;
+        promptGroup: AppState;
+      },
+      (items) => {
+        var page_str = that.text![that.process + 1];
+        console.log(that.text);
+        console.log(page_str);
+        const promptGroup = items.promptGroup as AppState;
+        let matchedPrompt = promptGroup.patternPair
+          .map((item) => {
+            const pattern = new RegExp(item.pattern);
+            return {
+              pattern: pattern,
+              match: pattern.exec(page_str.toLowerCase()),
+              prompt: item.prompt,
+            };
+          })
+          .filter((item) => {
+            console.log(item);
+            return item.match;
+          });
+
+        let prompt_str = "";
+        if (matchedPrompt.length == 0) {
+          that.process++;
+          that.sendNextText();
+          return;
+        }
+        prompt_str =
+          matchedPrompt
+            .map((item) => {
+              let prompt = item.prompt;
+              for (var i = 1; i < item.match!.length; i++) {
+                prompt = prompt.replace(`$${i}`, item.match![i]);
+              }
+              return ` - ${prompt}`;
+            })
+            .join("\n") + "\n";
+        prompt_str = `\n${promptGroup.globalPrompt}, the response should in ${promptGroup.language}\n${prompt_str}
+        `;
+        gptPage.send(page_str + prompt_str);
+      }
+    );
+  }
+
+  sendNextPage() {
     const gptPage = this.gptpage!;
     gptPage.vote(this);
     if (this.stoped) {
