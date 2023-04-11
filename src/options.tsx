@@ -1,15 +1,38 @@
 import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
+import Prompts from "./option_components/prompt";
+import RegPromptsTab from "./option_components/regex_prompt";
 
 let defaultPrompt = ``
 
+
+function SidebarButton({ name, isActive, onClick }: any) {
+  return (
+    <button
+      className={`${isActive ? "bg-gray-700" : ""
+        } w-full py-2 text-left px-4 hover:bg-gray-700 focus:outline-none`}
+      onClick={onClick}
+    >
+      {name}
+    </button>
+  );
+}
+
+const tab: { [key: string]: any } = {
+  'prompts': Prompts,
+  'reg-prompt': RegPromptsTab
+}
+
+
 const Options = () => {
   const [prompt, setPrompt] = useState<string>("");
-  const [status, setStatus] = useState<string>("");
+  const [activeButton, setActiveButton] = useState("prompts");
+
+  const handleButtonClick = (buttonName: string) => {
+    setActiveButton(buttonName);
+  };
 
   useEffect(() => {
-    // Restores select box and checkbox state using the preferences
-    // stored in chrome.storage.
     chrome.storage.sync.get(
       {
         prompt: defaultPrompt,
@@ -21,29 +44,50 @@ const Options = () => {
   }, []);
 
   const saveOptions = () => {
-    // Saves options to chrome.storage.sync.
     chrome.storage.sync.set(
       {
         prompt: prompt,
       },
       () => {
         // Update status to let user know options were saved.
-        setStatus("Prompt saved.");
         const id = setTimeout(() => {
-          setStatus("");
+          return;
         }, 1000);
         return () => clearTimeout(id);
       }
     );
   };
-
+  const Main = tab[activeButton]
   return (
     <>
-      <div>
-        <textarea value={prompt} onChange={(event) => setPrompt(event.target.value)}></textarea>
+      <div className="flex h-screen">
+        <div className="bg-gray-800 text-gray-100 w-1/5 flex flex-col items-center">
+          <SidebarButton
+            name="Prompts"
+            isActive={activeButton === "prompts"}
+            onClick={() => handleButtonClick("prompts")}
+          />
+          <SidebarButton
+            name="Regex Prompt"
+            isActive={activeButton === "reg-prompt"}
+            onClick={() => handleButtonClick("reg-prompt")}
+          />
+          <SidebarButton
+            name="History"
+            isActive={activeButton === "history"}
+            onClick={() => handleButtonClick("history")}
+          />
+          <SidebarButton
+            name="About"
+            isActive={activeButton === "about"}
+            onClick={() => handleButtonClick("about")}
+          />
+        </div>
+        <div className="w-4/5 p-4">
+          <Prompts></Prompts>
+          {/* <MainContent activeButton={activeButton} /> */}
+        </div>
       </div>
-      <div>{status}</div>
-      <button onClick={saveOptions}>Save</button>
     </>
   );
 };

@@ -37,10 +37,14 @@ In Chrome/Arc/Edge browser:
 - Go to the extensions management page
 - Turn on `Developer mode`
 - Click on `Load unpacked` among the buttons that appear
-- Load the `./dist` folder or drag `./dist.crx` into the extensions management page.
+- Drag `./dist.crx` into the extensions management page.
 - Refresh the ChatGPT page
 
 > If you have any question about load extension, try asking ChatGPT
+
+# CHANGING LOG
+
+ - 2023.04.10: 修复了多级列表转换失败的问题
 
 # Acknowledge
 
