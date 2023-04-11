@@ -1,6 +1,8 @@
 # 2023.04.10
 
 - 版本号：1.2.0
+- 其他
+  - 切换了[基于 vite 的脚手架](https://github.com/Jonghakseo/chrome-extension-boilerplate-react-vite)
 - bug
   - 修复了多级列表转换失败的问题
 - 内嵌页面
