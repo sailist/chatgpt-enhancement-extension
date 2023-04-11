@@ -9,15 +9,25 @@ To provide additional features to enhance the ChatGPT experience, including conv
 For better copy experimence, especially for code block, here is an example:
 ![](images/preview.png)
 
+Copy/Export full page:
+
+![](images/sidebar-preview.png)
+
 ## Load PDF and prompting questions based on regexp
 
 - Step 1. Write your own regexp-supported pattern and prompt
 - Step 2. Drop a PDF file in the textarea
 - Step 3. Wait for response
 
-![](images/pdf_preview.jpg)
-
 ![](images/overview-pdf.gif)
+
+Manage multiple regex-prompt group in option page:
+
+![](images/options-preview-2.png)
+
+## Prompt Hint
+
+![](images/type-prompt.png)
 
 # How to install
 
