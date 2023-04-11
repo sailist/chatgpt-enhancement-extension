@@ -13,19 +13,20 @@ const manifest: chrome.runtime.ManifestV3 = {
     service_worker: "src/pages/background/index.js",
     type: "module",
   },
-  action: {
-    default_popup: "src/pages/popup/index.html",
-    default_icon: "icon-32.png",
-  },
+  // action: {
+  //   default_popup: "src/pages/popup/index.html",
+  //   default_icon: "icon-32.png",
+  // },
   // chrome_url_overrides: {
   //   newtab: "src/pages/newtab/index.html",
   // },
   icons: {
     "128": "icon-128.png",
+    "32": "icon-32.png",
   },
   content_scripts: [
     {
-      matches: ["http://*/*", "https://*/*", "<all_urls>"],
+      matches: ["https://chat.openai.com/*", "https://freechatgpt.chat/*"],
       js: ["src/pages/content/index.js"],
       // KEY for cache invalidation
       css: [
@@ -34,7 +35,7 @@ const manifest: chrome.runtime.ManifestV3 = {
       ],
     },
   ],
-  devtools_page: "src/pages/devtools/index.html",
+  // devtools_page: "src/pages/devtools/index.html",
   permissions: ["storage", "unlimitedStorage", "webRequest"],
   web_accessible_resources: [
     {
