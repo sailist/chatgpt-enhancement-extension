@@ -1,4 +1,4 @@
-# chatgpt-markdown-and-pdf-extension
+# ChatGPT Enhancement Extension
 
 ![](images/small_promo.jpg)
 
@@ -16,7 +16,6 @@ For better copy experimence, especially for code block, here is an example:
 - Step 3. Wait for response
 
 ![](images/pdf_preview.jpg)
-
 
 ![](images/overview-pdf.gif)
 
@@ -41,10 +40,6 @@ In Chrome/Arc/Edge browser:
 - Refresh the ChatGPT page
 
 > If you have any question about load extension, try asking ChatGPT
-
-# CHANGING LOG
-
- - 2023.04.10: 修复了多级列表转换失败的问题
 
 # Acknowledge
 
