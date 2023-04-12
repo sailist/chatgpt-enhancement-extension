@@ -495,6 +495,10 @@ export class MarkdownButton implements GPTEventListener {
     // 定义一个函数来处理 div1 和 div2 的可见性
     function updateVisibility(markdownActive: boolean) {
       if (markdownActive) {
+        const code = document.createElement("p");
+        markdown_node.innerHTML = "";
+        markdown_node.appendChild(code);
+        code.textContent = divToMarkdown(preview_node);
         markdown_node.style.display = "block";
         preview_node.style.display = "none";
         markdownButton.style.backgroundColor = "lightgray";
