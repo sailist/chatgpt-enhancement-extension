@@ -1,9 +1,5 @@
 # ChatGPT Enhancement Extension
 
-![](./images/small_promo.jpg)
-
-为了提供额外的功能来增强 ChatGPT 的体验，包括将回复转换为 markdown 字符串、上传文件以及基于正则表达式自动提问等。
-
 功能：
 
 - [Prompt 提示](#prompt-提示)：在输入区域输入“/”并查看提示。

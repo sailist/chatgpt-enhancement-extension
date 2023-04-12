@@ -2,8 +2,6 @@
 
 # ChatGPT Enhancement Extension
 
-![](images/small_promo.jpg)
-
 Features:
 
 - [Prompt hint](#prompt-hint): type "/" in input area and see the hint.
