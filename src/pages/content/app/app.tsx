@@ -21,29 +21,22 @@ interface Styles {
 
 const styles: Styles = {
   container: {
-    position: "fixed",
-    top: "25%",
-    right: -25,
-    transform: "translateY(-50%)",
+    // position: "fixed",
+    // top: "25%",
+    // right: -25,
+    // transform: "translateY(-50%)",
     width: 50,
     height: 50,
     backgroundColor: "#F5F5F5",
     boxShadow: "0px 0px 5px 0px rgba(0,0,0,0.3)",
     borderRadius: 25,
-    display: "flex",
-    justifyContent: "flex-end",
+    // display: "flex",
+    // justifyContent: "flex-end",
     alignItems: "center",
     cursor: "pointer",
   },
   content: {
-    position: "absolute",
-    top: "-200%",
-    left: "-600%",
-    // height: "1000%",
-    width: "640%",
     overflowY: "auto",
-    // padding: 10,
-    backgroundColor: "#ffffff",
     display: "none",
     boxShadow: "0px 0px 5px 0px rgba(0,0,0,0.3)",
   },
@@ -167,6 +160,11 @@ const Sidebar: React.FC = () => {
                 el.addEventListener("input", (e) => {
                   const value = (e.target as HTMLTextAreaElement).value;
                   const el = e.target as HTMLTextAreaElement;
+                  setTextareaPos({
+                    x: el.getBoundingClientRect().x,
+                    y:
+                      document.body.clientHeight - el.getBoundingClientRect().y,
+                  });
                   if (value.startsWith("/")) {
                     setPromptHint(true);
                     setSelectIndex(0);
@@ -245,14 +243,14 @@ const Sidebar: React.FC = () => {
   };
 
   const savePageById = (id: string) => {
-    chrome.storage.local.get({ "chatgpt-history-ids": [] }, (item) => {
+    chrome.storage.local.get({ chatgptHistoryIds: [] }, (item) => {
       const markdown = prepareText();
-      const historyIds: string[] = item["chatgpt-history-ids"];
+      const historyIds: string[] = item["chatgptHistoryIds"];
       if (!historyIds.includes(id)) {
         historyIds.push(id);
       }
-      const res = { "chatgpt-history-ids": historyIds };
-      res[id] = markdown;
+      const res = { chatgptHistoryIds: historyIds };
+      res[id] = { chatid: id, content: markdown };
       chrome.storage.local.set(res, () => {
         console.log("save succeed.");
       });
@@ -261,7 +259,6 @@ const Sidebar: React.FC = () => {
 
   return (
     <>
-      {" "}
       <div
         style={{
           display: promptHint ? undefined : "none",
@@ -269,7 +266,7 @@ const Sidebar: React.FC = () => {
           left: textareaPos.x + "px",
           bottom: textareaPos.y + 24 + "px",
         }}
-        className="flex flex-col"
+        className="flex flex-col-reverse overflow-y-auto p-1 h-3/5"
       >
         <PromptSelector
           selectIndex={selectIndex}
@@ -361,11 +358,13 @@ const Sidebar: React.FC = () => {
         </div>
       </div>
       <div
+        className="fixed right-[-25px] top-32"
         style={styles.container}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
         <div
+          className="fixed right-0 top-32 mr-1 "
           style={{
             ...styles.content,
             ...(contentVisible && styles.contentVisible),

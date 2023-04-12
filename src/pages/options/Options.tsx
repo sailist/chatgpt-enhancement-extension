@@ -4,6 +4,7 @@ import clsx from "clsx";
 import Prompts from "./main/Prompts";
 import RegPrompts from "./main/RegPrompts";
 import About from "./main/About";
+import History from "./main/History";
 type ButtonProp = { name: string; value: string };
 
 const sidebar: ButtonProp[] = [
@@ -14,7 +15,7 @@ const sidebar: ButtonProp[] = [
 ];
 
 const Options: React.FC = () => {
-  const [main, setMain] = useState("prompts");
+  const [main, setMain] = useState("about");
 
   return (
     <div className="overflow-hidden w-full h-full relative flex">
@@ -47,6 +48,7 @@ const Options: React.FC = () => {
         <div className="flex flex-col items-center text-sm dark:bg-gray-800">
           {main === "prompts" && <Prompts />}
           {main === "reg-prompts" && <RegPrompts />}
+          {main === "history" && <History />}
           {main === "about" && <About />}
         </div>
       </div>

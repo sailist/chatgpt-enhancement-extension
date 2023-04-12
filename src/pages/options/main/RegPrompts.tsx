@@ -11,7 +11,7 @@ export interface RegPromptValue {
 }
 
 const EMPTY: RegPromptValue = {
-  title: "title",
+  title: "",
   prefix: "Answer the following question",
   contents: [{ regex: ".*", prompt: "Summary the content" }],
 };
@@ -105,22 +105,27 @@ export default function RegPrompts(props: PromptsProp) {
     console.log("keys");
 
     chrome.storage.local.get(
-      { reg_prompt_keys: ["default"] } as {
+      { reg_prompt_keys: ["default"], currentRegPrompt: null } as {
         reg_prompt_keys: RegPromptKeys;
+        currentRegPrompt: RegPromptValue;
       },
       (items) => {
-        const { reg_prompt_keys } = items as { reg_prompt_keys: RegPromptKeys };
+        const { reg_prompt_keys, currentRegPrompt } = items as {
+          reg_prompt_keys: RegPromptKeys;
+          currentRegPrompt: RegPromptValue;
+        };
 
-        console.log("keys", reg_prompt_keys);
         chrome.storage.local.get(__(reg_prompt_keys), (items) => {
-          console.log("initial", items);
-
-          if (Object.keys(items).length > 0) {
-            const newPrompts = Object.assign({}, items);
-            setPrompts(newPrompts);
-            setMenuSelected(items[Object.keys(items)[0]].title);
-          } else {
-            setMenuSelected("default");
+          if (sidebar) {
+            if (currentRegPrompt) {
+              setMenuSelected(currentRegPrompt.title);
+            } else if (Object.keys(items).length > 0) {
+              const newPrompts = Object.assign({}, items);
+              setPrompts(newPrompts);
+              setMenuSelected(items[Object.keys(items)[0]].title);
+            } else {
+              setMenuSelected("default");
+            }
           }
         });
       }
@@ -320,47 +325,49 @@ export default function RegPrompts(props: PromptsProp) {
           </div>
         )}
         <div>
-          <div className="relative mt-2">
-            <button
-              type="button"
-              onClick={() => {
-                setMenuExpand(!menuExpand);
-              }}
-              className="relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm sm:leading-6"
-            >
-              {menuSelected}
-            </button>
-            {menuExpand && (
-              <ul
-                className="absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
-                tabIndex={-1}
-                role="listbox"
-                aria-labelledby="listbox-label"
-                aria-activedescendant="listbox-option-3"
+          {sidebar && (
+            <div className="relative mt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setMenuExpand(!menuExpand);
+                }}
+                className="relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm sm:leading-6"
               >
-                {Object.keys(prompts).map((item, index) => {
-                  return (
-                    <li
-                      key={index}
-                      onClick={() => {
-                        setMenuExpand(false);
-                        setMenuSelected(prompts[item].title);
-                        onSelectChange(prompts[item]);
-                      }}
-                      className="hover:bg-slate-200 text-gray-900 relative cursor-default select-none py-2 pl-3 pr-9"
-                      role="option"
-                    >
-                      <div className="flex items-center">
-                        <span className="font-normal ml-3 block truncate">
-                          {prompts[item].title}
-                        </span>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </div>
+                {menuSelected}
+              </button>
+              {menuExpand && (
+                <ul
+                  className="absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
+                  tabIndex={-1}
+                  role="listbox"
+                  aria-labelledby="listbox-label"
+                  aria-activedescendant="listbox-option-3"
+                >
+                  {Object.keys(prompts).map((item, index) => {
+                    return (
+                      <li
+                        key={index}
+                        onClick={() => {
+                          setMenuExpand(false);
+                          setMenuSelected(prompts[item].title);
+                          onSelectChange(prompts[item]);
+                        }}
+                        className="hover:bg-slate-200 text-gray-900 relative cursor-default select-none py-2 pl-3 pr-9"
+                        role="option"
+                      >
+                        <div className="flex items-center">
+                          <span className="font-normal ml-3 block truncate">
+                            {prompts[item].title}
+                          </span>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+          )}
         </div>
 
         {Object.keys(prompts)
@@ -429,20 +436,24 @@ export default function RegPrompts(props: PromptsProp) {
                 <>
                   <div className="w-full">
                     <div className="mr-2 break-words font-medium flex justify-between">
-                      <div className="w-full">
-                        {editmode ? (
-                          <input
-                            placeholder="title"
-                            onChange={(event) => {
-                              setEditTitle(event.target.value);
-                            }}
-                            className="w-full"
-                            value={editContent.title}
-                          />
-                        ) : (
-                          title
-                        )}
-                      </div>
+                      {/* 标题，sidebar 因为有下拉框省略 */}
+                      {!sidebar && (
+                        <div className="w-full">
+                          {editmode ? (
+                            <input
+                              placeholder="title"
+                              onChange={(event) => {
+                                setEditTitle(event.target.value);
+                              }}
+                              className="w-full"
+                              value={editContent.title}
+                            />
+                          ) : (
+                            title
+                          )}
+                        </div>
+                      )}
+
                       <div className="ml-auto pl-4 flex flex-row">
                         {/* 按钮 */}
                         {!sidebar && (
@@ -503,6 +514,7 @@ export default function RegPrompts(props: PromptsProp) {
                       </div>
                     </div>
                     <div className="break-words mt-1 text-slate-700">
+                      {/* 通用前缀 */}
                       {editmode ? (
                         <textarea
                           className="w-full resize-y"

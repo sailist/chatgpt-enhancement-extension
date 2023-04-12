@@ -2,15 +2,13 @@
 
 ![](images/small_promo.jpg)
 
-To provide additional features to enhance the ChatGPT experience, including converting replies to markdown strings, uploading files, and automatically asking questions based on regular expressions.
-
 Features:
 
-- [Prompt hint](#prompt-hint): type "/" in input area and see the hint
-- [PDF support](#pdf-support): Load PDF file and read page by page with [Regex Prompt Group](#regex-prompt-group)
-- [Markdown support](#markdown-support): Convert dialogues into markdown format
-- Save, Copy and Export: Copy, Save and Export dialogues by [injected button group](#injected-button-group).
-- [Admin Dashboard](#admin-dashboard): Easy to managem all in option page.
+- [Prompt hint](#prompt-hint): type "/" in input area and see the hint.
+- [PDF support](#pdf-support): Load PDF file and read page by page with [Regex Prompt Group](#regex-prompt-group).
+- [Markdown convertion support](#markdown-support): Convert dialogues into markdown format.
+- [Copy, Save and Export Page](#injected-button-group): Copy, Save and Export dialogues by [injected button group](#injected-button-group).
+- [Admin Page](#admin-dashboard): Easy to manage all in option page.
 
 ## Prompt hint
 
@@ -53,16 +51,6 @@ Saved dialogue history:
 
 ![](images/dashboard-2.png)
 
-## Load PDF and prompting questions based on regexp
-
-- Step 1. Write your own regexp-supported pattern and prompt
-- Step 2. Drop a PDF file in the textarea
-- Step 3. Wait for response
-
-Manage multiple regex-prompt group in option page:
-
-![](images/options-preview-2.png)
-
 # How to install
 
 ## Install from Chrome Web Store
@@ -84,7 +72,7 @@ In Chrome/Arc/Edge browser:
 
 # Development
 
-```
+```bash
 git clone --depth=1 https://github.com/sailist/chatgpt-enhancement-extension/
 cd chatgpt-enhancement-extension
 npm install
@@ -92,6 +80,12 @@ npm run dev
 
 # load ./dist in Chrome browser
 ```
+
+# Buy me a coffee
+
+This plugin is driven by my personal interest. If you like this plugin, please consider buying me a cup of coffee. Your support will encourage me to continue my work, thanks!
+
+![](images/coffee.png)
 
 # Acknowledge
 

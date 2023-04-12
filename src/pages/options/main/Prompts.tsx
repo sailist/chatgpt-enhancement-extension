@@ -15,7 +15,7 @@ function _(k: string) {
 function __(k: string[]) {
   return k.map((item) => _(item));
 }
-const DEFAULT_PROMPT = {
+export const DEFAULT_PROMPT = {
   default: { title: "default", content: "I'm chatgpt-enhancement-extension" },
   defaultCh: { title: "中文", content: "我是 chatgpt-enhancement-extension" },
 };

@@ -4,7 +4,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc =
 import { PDFDocumentProxy } from "pdfjs-dist/types/src/display/api";
 import { makeButton, copyTextToClipboard, applyStyle } from "./tools";
 import { divToMarkdown } from "./markdown";
-import { AppState, defaultState, PatternPair } from "./components/prompt";
+// import { AppState, defaultState } from "./components/prompt";
 import { RegPromptValue } from "@src/pages/options/main/RegPrompts";
 export class GPTGroup {
   prompt?: HTMLDivElement;
@@ -324,20 +324,20 @@ export class PDFProcess implements GPTEventListener {
     const that = this;
     chrome.storage.local.get(
       {
-        prompt: "Summary the content",
-        promptGroup: defaultState,
-      } as {
-        prompt: string;
-        promptGroup: AppState;
+        currentRegPrompt: {
+          title: "default",
+          prefix: "未找到可用 Prompt",
+          contents: [],
+        },
       },
       (items) => {
         var page_str = that.text![that.process + 1];
         console.log(that.text);
         console.log(page_str);
-        const promptGroup = items.promptGroup as AppState;
-        let matchedPrompt = promptGroup.patternPair
+        const regPrompt = items.promptGroup as RegPromptValue;
+        let matchedPrompt = regPrompt.contents
           .map((item) => {
-            const pattern = new RegExp(item.pattern);
+            const pattern = new RegExp(item.regex);
             return {
               pattern: pattern,
               match: pattern.exec(page_str.toLowerCase()),
@@ -359,14 +359,13 @@ export class PDFProcess implements GPTEventListener {
           matchedPrompt
             .map((item) => {
               let prompt = item.prompt;
-              for (var i = 1; i < item.match!.length; i++) {
+              for (let i = 1; i < item.match!.length; i++) {
                 prompt = prompt.replace(`$${i}`, item.match![i]);
               }
               return ` - ${prompt}`;
             })
             .join("\n") + "\n";
-        prompt_str = `\n${promptGroup.globalPrompt}, the response should in ${promptGroup.language}\n${prompt_str}
-        `;
+        prompt_str = `\n${regPrompt.prefix}\n${prompt_str}`;
         gptPage.send(page_str + prompt_str);
       }
     );
@@ -434,8 +433,7 @@ export class PDFProcess implements GPTEventListener {
                   return ` - ${prompt}`;
                 })
                 .join("\n") + "\n";
-            prompt_str = `\n${regPrompt.prefix}\n${prompt_str}
-            `;
+            prompt_str = `\n${regPrompt.prefix}\n${prompt_str}`;
             gptPage.send(page_str + prompt_str);
           }
         );

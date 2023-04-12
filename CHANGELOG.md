@@ -1,3 +1,15 @@
+# 2023.04.12
+
+- 版本号：1.2.1
+- 添加了 History
+- 完善了文档
+- bugs
+  - 屏幕大小变化时 Prompt-hint 位置不更新
+- option page
+  - History 页面，History 页面支持批量导出所有记录
+- 其他
+  - 记录每次选择的 reg-prompt group
+
 # 2023.04.10
 
 - 版本号：1.2.0

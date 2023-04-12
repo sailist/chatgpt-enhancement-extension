@@ -1,7 +1,7 @@
 {
   "name": "chatgpt-enhancement-extension",
-  "version": "1.2.0",
-  "description": "ChatGPT Markdown and PDF Extension",
+  "version": "1.2.1",
+  "description": "Enhancing ChatGPT through the integration of multiple workflows.",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -18,6 +18,7 @@
   "type": "module",
   "dependencies": {
     "clsx": "^1.2.1",
+    "jszip": "^3.10.1",
     "react": "18.2.0",
     "react-dom": "18.2.0"
   },
