@@ -1,3 +1,5 @@
+[中文](./README.zh.md)
+
 # ChatGPT Enhancement Extension
 
 ![](images/small_promo.jpg)

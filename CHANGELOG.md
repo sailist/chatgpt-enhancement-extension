@@ -9,6 +9,7 @@
   - History 页面，History 页面支持批量导出所有记录
 - 其他
   - 记录每次选择的 reg-prompt group
+  - 优化了 Prompt Hint 的体验：支持键盘切换和选择
 
 # 2023.04.10
 
