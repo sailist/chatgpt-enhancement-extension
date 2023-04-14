@@ -21,6 +21,7 @@ export const MessageType = {
   GET_RESPONSE_ID: "get-new-id",
   REGISTER_GPT: "register-chatgpt-page",
   GET_GPT_TABID: "get-chatgpt-tabid",
+  ACTIVE_GPTPAGE :"active-chatgpt-page",
 };
 export const MT = MessageType; // alias
 
