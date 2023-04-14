@@ -3,6 +3,7 @@ import { getCurrentTime } from "../utils";
 import JSZip from "jszip";
 import { storage } from "@src/common";
 import SearchBar from "@src/common/components/SearchBar";
+import { track } from "@src/common/track";
 
 type PromptValue = {
   chatid: string;
@@ -138,6 +139,7 @@ export default function History() {
           onChange={(event) => {
             const text = (event.target as any).value as string;
             setFilter(text);
+            track("Use history-search input", {});
           }}
         />
         {/* <div className="bg-white sticky top-0 hidden lg:flex items-center text-sm leading-6 text-slate-400 rounded-md ring-1 ring-slate-900/10 shadow-sm py-1.5 pl-2 pr-3">
@@ -170,6 +172,7 @@ export default function History() {
                       <div
                         onClick={() => {
                           navigator.clipboard.writeText(content);
+                          track("Click history-copy button", {});
                         }}
                         className="pointer-events-auto flex-none rounded-md px-2 py-[0.3125rem] font-medium text-slate-700 shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50"
                       >
@@ -178,6 +181,7 @@ export default function History() {
                       <div
                         onClick={() => {
                           removePrompt(chatid);
+                          track("Click history-remove button", {});
                         }}
                         className="pointer-events-auto flex-none rounded-md px-2 py-[0.3125rem] font-medium text-slate-700 shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50"
                       >
@@ -202,6 +206,7 @@ export default function History() {
           onClick={() => {
             setInBackup(true);
             backupZip();
+            track("Click history-backup button", {});
           }}
           ref={dropzoneRef}
           className="w-full border py-2 pointer-events-auto m-2 rounded-md px-2 font-medium text-slate-700 ring-1 ring-slate-700/10 hover:bg-slate-50"

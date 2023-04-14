@@ -6,6 +6,7 @@ import { PDFDocumentProxy } from "pdfjs-dist/types/src/display/api";
 import { RegPromptValue } from "@src/pages/options/main/RegPrompts";
 import { GPTEventListener, GPTGroup, GPTPageHandler } from "../inject/page";
 import { storage } from "@src/common";
+import { track } from "@src/common/track";
 
 export class PDFProcess implements GPTEventListener {
   onProgress(gptGroup: GPTGroup): void {}
@@ -43,9 +44,12 @@ export class PDFProcess implements GPTEventListener {
           const fn = file.name.toLowerCase();
           if (fn.endsWith("pdf")) {
             that.onDropFile(file);
+            track("Drag PDF file", {});
           } else if (fn.endsWith("pptx")) {
           } else {
             that.onDropText(file);
+            const suff = fn.split(".");
+            track("Drag other file", { suff: suff[suff.length - 1] });
           }
         } else {
         }

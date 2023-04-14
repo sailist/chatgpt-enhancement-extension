@@ -9,6 +9,7 @@ import {
   settingKeys,
 } from "../options/main/Setting";
 import { storage } from "@src/common";
+import { track } from "@src/common/track";
 
 const Popup = () => {
   const [settings, setSettings] = useState<SettingDict>({});
@@ -29,12 +30,15 @@ const Popup = () => {
         content="Active"
         onClick={() => {
           sendMessage({ type: MT.ACTIVE_GPTPAGE });
+
+          track("Click popup-active button", {});
         }}
       />
       <Button
         content="Option Page"
         onClick={() => {
           chrome.tabs.create({ url: "src/pages/options/index.html" });
+          track("Click option-page button", {});
         }}
       />
       <div>Setting Values</div>

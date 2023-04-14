@@ -12,12 +12,7 @@ import {
 import { REGEX_GPTURL, getPureUrl } from "@src/common/url";
 import { useEffect, useRef, useState } from "react";
 import PromptSelector from "./components/PromptSelector";
-import {
-  isFatherHasClass,
-  isFatherHasId,
-  keyEventEqualStr,
-} from "@src/common/element";
-import { getCurrentTime } from "@src/pages/options/utils";
+import { isFatherHasId, keyEventEqualStr } from "@src/common/element";
 import { divToMarkdown } from "@src/common/markdown";
 import {
   DEFAULT_SETTINGS,
@@ -25,6 +20,7 @@ import {
   settingKeys,
 } from "@src/pages/options/main/Setting";
 import Button from "@src/common/components/Button";
+import { track } from "@src/common/track";
 
 interface Styles {
   container: React.CSSProperties;
@@ -117,6 +113,7 @@ const SelectAnalayse: React.FC = () => {
           setResponse(responseRef.current);
           setLatestResponse(null);
           saveResponse();
+          track("Cross-prompt succeed", {});
         }
         if (htmlRef.current) {
           htmlRef.current.scrollTop = htmlRef.current.scrollHeight;
@@ -125,22 +122,18 @@ const SelectAnalayse: React.FC = () => {
     );
 
     document.body.addEventListener("keydown", (e) => {
-      console.log(e);
       if (hintRef.current) {
         if (e.key === "ArrowDown") {
-          console.log(e.key);
           indexRef.current++;
           setSelectIndex(indexRef.current);
           e.preventDefault();
           e.stopPropagation();
         } else if (e.key === "ArrowUp") {
-          console.log(e.key);
           indexRef.current--;
           setSelectIndex(indexRef.current);
           e.preventDefault();
           e.stopPropagation();
         } else if (e.key === "Tab") {
-          console.log(e.key);
           setSelectDown(true);
           e.preventDefault();
           e.stopPropagation();
@@ -182,7 +175,6 @@ const SelectAnalayse: React.FC = () => {
     document.body.addEventListener(
       "keydown",
       (e) => {
-        console.log(e, statusRef.current);
         const settings = settingsRef.current;
         if (statusRef.current === "none") {
           if (keyEventEqualStr(e, settings.settingStrSend.string)) {
@@ -222,6 +214,7 @@ const SelectAnalayse: React.FC = () => {
   }, []);
 
   const sendQuestion = (content: string, prompt?: string) => {
+    track("Use cross-prompt", {});
     sendMessage<PARSE_SELECTION["payload"], any>({
       type: MT.PARSE_SELECTION,
       payload: {
@@ -235,7 +228,7 @@ const SelectAnalayse: React.FC = () => {
           statusRef.current = "wait";
         } else {
           const number = latestError ? latestError.toTab : 0;
-          setLatestError({
+          const errorMessage = {
             timestamp: new Date().getTime(),
             content:
               "<b>Reason: </b>" +
@@ -244,7 +237,9 @@ const SelectAnalayse: React.FC = () => {
               `<p><i>(${new Date()})</i></p>`,
             prompt: "Failed to get response",
             toTab: number + 1,
-          });
+          };
+          setLatestError(errorMessage);
+          track("Failed cross-prompt", errorMessage);
         }
       })
       .catch(() => {
@@ -353,6 +348,7 @@ const SelectAnalayse: React.FC = () => {
                       setResponse([]);
                       setLatestError(null);
                     });
+                    track("Click select-clear button", {});
                   }}
                 />
                 <Button
@@ -369,12 +365,14 @@ const SelectAnalayse: React.FC = () => {
                       })
                       .join("\n");
                     navigator.clipboard.writeText(text);
+                    track("Click select-copy button", {});
                   }}
                 />
                 <Button
                   content="hide"
                   onClick={() => {
                     setHideResponse(true);
+                    track("Click select-hide button", {});
                   }}
                 />
               </div>

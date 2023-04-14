@@ -6,7 +6,7 @@ import { storage } from "@src/common";
 import Button from "@src/common/components/Button";
 import clsx from "clsx";
 
-const Row = ({ row, onChange }: { row: Row; onChange? }) => {
+const Row = ({ row, onChange }: { row: SettingRecord; onChange? }) => {
   if (!row) {
     return <></>;
   }
@@ -62,7 +62,7 @@ interface KeySetting {
   ctrl: boolean;
 }
 
-interface Row {
+export interface SettingRecord {
   name: string;
   desc: string;
   type: "boolean" | "string" | "number";
@@ -74,15 +74,17 @@ interface Row {
 type settingKey =
   | "settingStrAPIKey"
   | "settingStrSend"
+  | "settingBoolTrackEnable"
   | "settingStrSendWithPromptHint";
 
 export type SettingDict = {
-  [key in settingKey]?: Row;
+  [key in settingKey]?: SettingRecord;
 };
 
 export const settingKeys: settingKey[] = [
   "settingStrAPIKey",
   "settingStrSend",
+  "settingBoolTrackEnable",
   "settingStrSendWithPromptHint",
 ];
 export const DEFAULT_SETTINGS: SettingDict = {
@@ -102,6 +104,12 @@ export const DEFAULT_SETTINGS: SettingDict = {
     name: "Send selection with prompt hint",
     type: "string",
     string: "x",
+    desc: "",
+  },
+  settingBoolTrackEnable: {
+    name: "Enable to track your anonymous user data",
+    type: "boolean",
+    boolean: true,
     desc: "",
   },
 };

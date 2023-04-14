@@ -3,6 +3,7 @@ import clsx from "clsx";
 import { getCurrentTime } from "../utils";
 import { storage } from "@src/common";
 import SearchBar from "@src/common/components/SearchBar";
+import { track } from "@src/common/track";
 
 export type PromptValue = { title: string; content: string; common?: boolean };
 export type Prompts = {
@@ -187,6 +188,7 @@ export default function Prompts() {
           onChange={(event) => {
             const text = (event.target as any).value as string;
             setFilter(text);
+            track("Use propt-search input", {});
           }}
         />
         {Object.keys(prompts)

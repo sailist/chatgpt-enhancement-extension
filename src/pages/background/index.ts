@@ -1,15 +1,14 @@
 import { Readability } from "@mozilla/readability";
 import {
-  ExMessage,
   FAIL_MSG,
   MT,
   PARSE_SELECTION,
   PARSE_SELECTION_RESULT,
   SUCCEED_MSG,
   addMessageListener,
-  sendMessage,
   sendTabMessage,
 } from "@src/common/message";
+import { track } from "@src/common/track";
 import { REGEX_GPTURL } from "@src/common/url";
 import reloadOnUpdate from "virtual:reload-on-update-in-background-script";
 
@@ -59,6 +58,7 @@ addMessageListener<any, any>((message, sender, sendResponse) => {
     status["tabid"] = sender.tab.id;
     console.log("ChatGPT registered");
     setIcon(true);
+    track("Registered chatgpt page", {});
   } else if (message.type === MT.GET_GPT_TABID) {
     if (status["tabid"]) {
       sendResponse({
@@ -102,8 +102,10 @@ addMessageListener<any, any>((message, sender, sendResponse) => {
     if (status.tabid) {
       // chrome.tabs.
       chrome.tabs.update(status.tabid, { active: true }).then(() => {});
+      track("Find old chatgpt page", {});
     } else {
       chrome.tabs.create({ url: "https://chat.openai.com/" });
+      track("Create new chatgpt page", {});
     }
   }
   // const url = "https://chat.openai.com/";
@@ -180,4 +182,15 @@ chrome.tabs.onRemoved.addListener((tabid, info) => {
     setIcon(false);
     status.tabid = undefined;
   }
+});
+
+chrome.runtime.onInstalled.addListener(() => {});
+
+chrome.runtime.onInstalled.addListener((details) => {
+  if (details.reason === chrome.runtime.OnInstalledReason.INSTALL) {
+    chrome.runtime.setUninstallURL(
+      "https://github.com/sailist/chatgpt-enhancement-extension"
+    );
+  }
+  track("installed", { details });
 });

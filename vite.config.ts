@@ -38,6 +38,9 @@ export default defineConfig({
     addHmr({ background: enableHmrInBackgroundScript, view: true }),
   ],
   publicDir,
+  esbuild: {
+    drop: ["console", "debugger"],
+  },
   build: {
     outDir,
     emptyOutDir: false,

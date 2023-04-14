@@ -8,7 +8,7 @@
     "url": "https://github.com/sailist/chatgpt-enhancement-extension"
   },
   "scripts": {
-    "build": "vite build",
+    "build": "vite build --outDir out",
     "build:watch": "cross-env __DEV__=true vite build --watch",
     "build:hmr": "rollup --config utils/reload/rollup.config.ts",
     "wss": "node utils/reload/initReloadServer.js",
@@ -22,6 +22,7 @@
     "immer": "^9.0.21",
     "jsdom": "^21.1.1",
     "jszip": "^3.10.1",
+    "mixpanel-browser": "^2.46.0",
     "postcss-prefix-selector": "^1.16.0",
     "postcss-selector-not": "^7.0.1",
     "react": "18.2.0",

@@ -4,6 +4,7 @@ import { getCurrentTime } from "../utils";
 import { storage } from "@src/common";
 import SearchBar from "@src/common/components/SearchBar";
 import Button from "@src/common/components/Button";
+import { track } from "@src/common/track";
 
 const CONST_KEYNAME = "reg_prompt_key";
 
@@ -303,6 +304,7 @@ export default function RegPrompts(props: PromptsProp) {
             onChange={(event) => {
               const text = (event.target as any).value as string;
               setFilter(text);
+              track("Use reg-propt-search input", {});
             }}
           />
         )}

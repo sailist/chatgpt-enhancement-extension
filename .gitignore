@@ -128,3 +128,5 @@ utils/reload/injections/*.js
 public/manifest.json
 
 TODOs.md
+
+out/

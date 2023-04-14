@@ -12,6 +12,7 @@ import { storage } from "@src/common";
 import { SelectionParser } from "../inject/selparser";
 import { isFatherHasClass } from "@src/common/element";
 import { REGEX_GPT_ID } from "@src/common/url";
+import { track } from "@src/common/track";
 
 interface Styles {
   container: React.CSSProperties;
@@ -319,6 +320,7 @@ const Sidebar: React.FC = () => {
           <div
             onClick={() => {
               navigator.clipboard.writeText(prepareText());
+              track("Click sidebar-copy-all button", {});
             }}
             className="w-20 py-2 pointer-events-auto bg-white m-2 rounded-md px-2 text-xs text-slate-700 shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50"
           >
@@ -327,6 +329,7 @@ const Sidebar: React.FC = () => {
           <div
             onClick={() => {
               navigator.clipboard.writeText(prepareText(true));
+              track("Click sidebar-copy-answer button", {});
             }}
             className="w-24 py-2 pointer-events-auto bg-white m-2 rounded-md px-2 text-xs text-slate-700 shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50"
           >
@@ -336,6 +339,7 @@ const Sidebar: React.FC = () => {
         <div className="flex flex-row">
           <div
             onClick={() => {
+              track("Click sidebar-export button", {});
               const blob = new Blob([prepareText()], {
                 type: "text/plain;charset=utf-8",
               });
@@ -367,6 +371,7 @@ const Sidebar: React.FC = () => {
           </div>
           <div
             onClick={() => {
+              track("Click sidebar-save-dialogue button", {});
               const match = document.URL.match(REGEX_GPT_ID);
               console.log(match);
               if (match) {

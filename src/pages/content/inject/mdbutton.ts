@@ -2,6 +2,7 @@ import { divToMarkdown } from "@common/markdown";
 import { makeButton, copyTextToClipboard, applyStyle } from "@common/element";
 
 import { GPTEventListener, GPTGroup, GPTPageHandler } from "../inject/page";
+import { track } from "@src/common/track";
 
 export class MarkdownButton implements GPTEventListener {
   onProgress(gptGroup: GPTGroup): void {}
@@ -82,15 +83,18 @@ export class MarkdownButton implements GPTEventListener {
 
     markdownButton.addEventListener("click", () => {
       updateVisibility(true);
+      track("Click markdown button", {});
     });
 
     // 当点击 preview 按钮时，显示 div2，隐藏 div1
     previewButton.addEventListener("click", () => {
       updateVisibility(false);
+      track("Click preview button", {});
     });
 
     copyButton.addEventListener("click", () => {
       copyTextToClipboard(markdown_node.textContent!);
+      track("Click copy button", {});
     });
     return wrap;
   }

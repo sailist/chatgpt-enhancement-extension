@@ -2,7 +2,7 @@
 
 # ChatGPT Enhancement Extension
 
-An all-in-one extension to improve your ChatGPT experience!
+The best ChatGPT all-in-one extension to improve your chat experience!
 
 Features:
 
@@ -11,7 +11,7 @@ Features:
 - [Markdown convertion support](#markdown-support): Convert dialogues into markdown format.
 - [Copy, Save and Export Page](#injected-button-group): Copy, Save and Export dialogues by [injected button group](#injected-button-group).
 - [Admin Page](#admin-dashboard): Easy to manage all in option page.
-- [Ask anywhere](#ask-anywhere): Open an gpt page, then you can select and prompt anywhere without API.
+- [All in one](#all-in-one): Open one gpt page, then you can select and prompt anywhere without API.
 
 ## Prompt hint
 
@@ -54,7 +54,7 @@ Saved dialogue history:
 
 ![](images/dashboard-2.png)
 
-## Ask anywhere
+## All-In-One
 
 Select the answer text, and then re-prompt it:
 
