@@ -1,11 +1,11 @@
 {
   "name": "chatgpt-enhancement-extension",
   "version": "1.2.1",
-  "description": "Enhancing ChatGPT through the integration of multiple workflows.",
+  "description": "An all-in-one extension to improve your ChatGPT experience!",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Jonghakseo/chrome-extension-boilerplate-react-vite.git"
+    "url": "https://github.com/sailist/chatgpt-enhancement-extension"
   },
   "scripts": {
     "build": "vite build",
@@ -17,8 +17,12 @@
   },
   "type": "module",
   "dependencies": {
+    "@mozilla/readability": "^0.4.4",
     "clsx": "^1.2.1",
+    "jsdom": "^21.1.1",
     "jszip": "^3.10.1",
+    "postcss-prefix-selector": "^1.16.0",
+    "postcss-selector-not": "^7.0.1",
     "react": "18.2.0",
     "react-dom": "18.2.0"
   },
@@ -28,6 +32,7 @@
     "@types/chrome": "0.0.224",
     "@types/jest": "29.0.3",
     "@types/node": "18.15.11",
+    "@types/postcss-prefix-selector": "^1.15.0",
     "@types/react": "18.0.21",
     "@types/react-dom": "18.0.11",
     "@types/ws": "^8.5.3",
@@ -47,6 +52,7 @@
     "npm-run-all": "^4.1.5",
     "pdfjs-dist": "^3.5.141",
     "postcss": "^8.4.21",
+    "postcss-import": "^15.1.0",
     "prettier": "2.7.1",
     "rollup": "2.79.1",
     "sass": "1.55.0",
