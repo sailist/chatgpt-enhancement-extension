@@ -7,6 +7,7 @@
 - [Markdown 转换支持](#markdown-转换支持)：将对话转换为 markdown 格式。
 - [复制、保存和导出页面](#额外功能按钮)：通过[注入按钮组](#额外功能按钮)复制、保存和导出对话。
 - [后台管理](#后台管理)：在选项页面中轻松管理所有。
+- [在任意位置提问](#在任意位置提问)：无需 API，开启一个 ChatGPT 页面即可跨页面提问。
 
 ## Prompt 提示
 
@@ -47,6 +48,18 @@
 编辑保存的对话历史记录：
 
 ![](./images/dashboard-2.png)
+
+## 在任意位置提问
+
+在任意页面选中文本，按 `c` 键直接发送到 ChatGPT 页面，按 `x` 弹出 Prompt-hint 选择 Prompt 发送。
+
+![](images/re-prompt.gif)
+
+这一功能是跨页面的：
+
+![](images/connect-cross-page-with-prompt.gif)
+
+![](images/connect-cross-page.gif)
 
 # 安装
 

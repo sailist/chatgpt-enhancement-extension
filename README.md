@@ -11,6 +11,7 @@ Features:
 - [Markdown convertion support](#markdown-support): Convert dialogues into markdown format.
 - [Copy, Save and Export Page](#injected-button-group): Copy, Save and Export dialogues by [injected button group](#injected-button-group).
 - [Admin Page](#admin-dashboard): Easy to manage all in option page.
+- [Ask anywhere](#ask-anywhere): Open an gpt page, then you can select and prompt anywhere without API.
 
 ## Prompt hint
 
@@ -53,6 +54,20 @@ Saved dialogue history:
 
 ![](images/dashboard-2.png)
 
+## Ask anywhere
+
+Select the answer text, and then re-prompt it:
+
+![](images/re-prompt.gif)
+
+Select in any page, and prompt them:
+
+![](images/connect-cross-page-with-prompt.gif)
+
+![](images/connect-cross-page.gif)
+
+> Type `c` to send text directly, type `x` to open the prompt-hint menu. These shortcut can be changed in the `settings` tab of option page.
+
 # How to install
 
 ## Install from Chrome Web Store
@@ -91,7 +106,7 @@ This plugin is driven by my personal interest. If you like this plugin, please c
 
 # Contribution
 
- - 
+-
 
 # Acknowledge
 
