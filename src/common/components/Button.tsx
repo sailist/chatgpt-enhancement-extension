@@ -3,6 +3,7 @@ interface Props {
   onClick?;
   wFull?: boolean;
   dragable?;
+  colorClass?: string;
   className?: string;
   content: string;
   handleDrop?;
@@ -12,6 +13,7 @@ export default function Button({
   wFull,
   dragable,
   content,
+  colorClass,
   handleDrop,
   className,
 }: Props) {
@@ -39,10 +41,11 @@ export default function Button({
       onDragLeave={handleDrop ? handleDragLeave : undefined}
       onDrop={_handleDrop}
       className={clsx(
-        "py-2 bg-white pointer-events-auto my-2 rounded-md px-2 font-medium text-slate-700 shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50",
+        className,
+        "py-2 pointer-events-auto my-2 rounded-md px-2 font-medium text-slate-700 shadow-sm ring-1 ring-slate-700/10",
         wFull ? "w-full" : "",
         dragable ? "border border-dashed border-slate-300" : "",
-        className
+        colorClass || "bg-white hover:bg-slate-200"
       )}
     >
       {content}

@@ -19,7 +19,7 @@ const Row = ({ row, onChange }: { row: SettingRecord; onChange? }) => {
             name="comments"
             type="checkbox"
             onChange={onChange}
-            value={row.boolean}
+            checked={row.boolean}
             className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
           />
         </div>
@@ -164,9 +164,17 @@ export default function Setting() {
           );
         }}
       />
+      <Row
+        row={settings["settingBoolTrackEnable"]}
+        onChange={(e) => {
+          console.log(e.target.checked);
+          setSetting("settingBoolTrackEnable", e.target.checked);
+        }}
+      />
       <Row row={settings["settingStrAPIKey"]} />
       <Button
-        className={clsx("mt-2", diff ? "bg-green-200 hover:bg-green-300" : "")}
+        className={clsx("mt-2")}
+        colorClass={diff ? "bg-green-200 hover:bg-green-300" : undefined}
         content="Save"
         onClick={() => {
           save();
