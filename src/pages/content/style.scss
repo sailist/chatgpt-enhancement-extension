@@ -1,5 +1,2 @@
-@import "@assets/style/theme.scss";
-
-.content-view {
-  font-size: 30px;
-}
+@tailwind components;
+@tailwind utilities;
