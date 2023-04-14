@@ -11,7 +11,7 @@ Features:
 - [Markdown convertion support](#markdown-support): Convert dialogues into markdown format.
 - [Copy, Save and Export Page](#injected-button-group): Copy, Save and Export dialogues by [injected button group](#injected-button-group).
 - [Admin Page](#admin-dashboard): Easy to manage all in option page.
-- [All in one](#all-in-one): Open one gpt page, then you can select and prompt anywhere without API.
+- [All in one](#all-in-one): Open one GPT page, then you can select and prompt anywhere without API.
 
 ## Prompt hint
 

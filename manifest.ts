@@ -45,14 +45,14 @@ const manifest: chrome.runtime.ManifestV3 = {
 
   // devtools_page: "src/pages/devtools/index.html",
   permissions: [
-    "contextMenus", // Create context menu, click to send selection text,
-    "scripting", // inject content scripts
+    "contextMenus", // To support getting selection text in extension (like pdf reader)
+    // "scripting", // inject content scripts
     // sendMessage from background to tab, create/update active tab, listen update and remove event for chatgpt page detection
-    "tabs",
-    "activeTab", // query active tab
+    "tabs", // sendMessage between tabs and background
+    "activeTab", // query currently active tab
     "webRequest", // detect request url for id
     "storage", // storage dialogue history
-    "unlimitedStorage",
+    "unlimitedStorage", //
   ],
   web_accessible_resources: [
     {
