@@ -2,6 +2,8 @@
 
 # ChatGPT Enhancement Extension
 
+An all-in-one extension to improve your ChatGPT experience!
+
 Features:
 
 - [Prompt hint](#prompt-hint): type "/" in input area and see the hint.
@@ -86,6 +88,10 @@ npm run dev
 This plugin is driven by my personal interest. If you like this plugin, please consider buying me a cup of coffee. Your support will encourage me to continue my work, thanks!
 
 ![](images/coffee.png)
+
+# Contribution
+
+ - 
 
 # Acknowledge
 
