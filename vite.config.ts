@@ -8,6 +8,7 @@ import manifest from "./manifest";
 
 const root = resolve(__dirname, "src");
 const pagesDir = resolve(root, "pages");
+const commonDir = resolve(root, "common");
 const assetsDir = resolve(root, "assets");
 const outDir = resolve(__dirname, "dist");
 const publicDir = resolve(__dirname, "public");
@@ -24,6 +25,7 @@ export default defineConfig({
       "@src": root,
       "@assets": assetsDir,
       "@pages": pagesDir,
+      "@common": commonDir,
     },
   },
   plugins: [
@@ -54,6 +56,7 @@ export default defineConfig({
         newtab: resolve(pagesDir, "newtab", "index.html"),
         options: resolve(pagesDir, "options", "index.html"),
       },
+
       watch: {
         include: ["src/**", "vite.config.ts"],
         exclude: ["node_modules/**", "src/**/*.spec.ts"],
