@@ -12,9 +12,19 @@ import {
 import { REGEX_GPTURL, getPureUrl } from "@src/common/url";
 import { useEffect, useRef, useState } from "react";
 import PromptSelector from "./components/PromptSelector";
-import { isFatherHasClass, isFatherHasId } from "@src/common/element";
+import {
+  isFatherHasClass,
+  isFatherHasId,
+  keyEventEqualStr,
+} from "@src/common/element";
 import { getCurrentTime } from "@src/pages/options/utils";
 import { divToMarkdown } from "@src/common/markdown";
+import {
+  DEFAULT_SETTINGS,
+  SettingDict,
+  settingKeys,
+} from "@src/pages/options/main/Setting";
+import Button from "@src/common/components/Button";
 
 interface Styles {
   container: React.CSSProperties;
@@ -72,8 +82,17 @@ const SelectAnalayse: React.FC = () => {
   const htmlRef = useRef<HTMLDivElement>();
   const statusRef = useRef(status);
 
+  const settingsRef = useRef<SettingDict>();
+
   useEffect(() => {
     const pureUrl = getPureUrl();
+
+    storage.gets<SettingDict>(settingKeys).then((item) => {
+      settingsRef.current = Object.assign({}, DEFAULT_SETTINGS, item);
+      console.log(item);
+      console.log(settingsRef.current);
+    });
+
     storage
       .get<PARSE_SELECTION_RESULT["payload"][]>(pureUrl, [])
       .then((oldResponse) => {
@@ -106,6 +125,7 @@ const SelectAnalayse: React.FC = () => {
     );
 
     document.body.addEventListener("keydown", (e) => {
+      console.log(e);
       if (hintRef.current) {
         if (e.key === "ArrowDown") {
           console.log(e.key);
@@ -159,39 +179,46 @@ const SelectAnalayse: React.FC = () => {
         });
     };
 
-    document.body.addEventListener("keydown", (e) => {
-      console.log(e, statusRef.current);
-      if (statusRef.current === "none") {
-        if (e.key === "c") {
-          const sel = document.getSelection();
-          console.log("getSelection");
-          if (sel && !sel.isCollapsed) {
-            console.log("sendmessage");
-            const content = sel.getRangeAt(0).cloneContents().textContent;
-            sendQuestion(content);
-          }
-        } else if (e.key === "x") {
-          const sel = document.getSelection();
-          if (!sel || sel.isCollapsed) {
-            return;
-          }
-          const range = sel.getRangeAt(0);
+    document.body.addEventListener(
+      "keydown",
+      (e) => {
+        console.log(e, statusRef.current);
+        const settings = settingsRef.current;
+        if (statusRef.current === "none") {
+          if (keyEventEqualStr(e, settings.settingStrSend.string)) {
+            const sel = document.getSelection();
+            console.log("getSelection");
+            if (sel && !sel.isCollapsed) {
+              console.log("sendmessage");
+              const content = sel.getRangeAt(0).cloneContents().textContent;
+              sendQuestion(content);
+            }
+          } else if (
+            keyEventEqualStr(e, settings.settingStrSendWithPromptHint.string)
+          ) {
+            const sel = document.getSelection();
+            if (!sel || sel.isCollapsed) {
+              return;
+            }
+            const range = sel.getRangeAt(0);
 
-          const rect = range.getBoundingClientRect();
-          const newPos = {
-            x: rect.x,
-            y: window.innerHeight - window.pageYOffset - rect.top,
-          };
-          setSelectPos(newPos);
-          console.log(rect);
-          console.log(newPos);
-          setPromptHint(true);
-          setSelectIndex(0);
-          indexRef.current = 0;
-          hintRef.current = true;
+            const rect = range.getBoundingClientRect();
+            const newPos = {
+              x: rect.x,
+              y: window.innerHeight - window.pageYOffset - rect.top,
+            };
+            setSelectPos(newPos);
+            console.log(rect);
+            console.log(newPos);
+            setPromptHint(true);
+            setSelectIndex(0);
+            indexRef.current = 0;
+            hintRef.current = true;
+          }
         }
-      }
-    });
+      },
+      { capture: true }
+    );
   }, []);
 
   const sendQuestion = (content: string, prompt?: string) => {
@@ -250,8 +277,9 @@ const SelectAnalayse: React.FC = () => {
           position: "absolute",
           left: selectPos.x + "px",
           bottom: selectPos.y + "px",
+          maxHeight: "30%",
         }}
-        className="z-[10000000] flex flex-col-reverse overflow-y-auto p-1 h-2/5"
+        className="z-[10000000] flex flex-col-reverse overflow-y-auto p-1 bg-white"
       >
         <PromptSelector
           selectIndex={selectIndex}
@@ -316,7 +344,8 @@ const SelectAnalayse: React.FC = () => {
                 })}
               </div>
               <div className="flex flex-row float-right">
-                <div
+                <Button
+                  content="clear"
                   onClick={() => {
                     const pureUrl = getPureUrl();
                     storage.remove(pureUrl).then(() => {
@@ -325,11 +354,9 @@ const SelectAnalayse: React.FC = () => {
                       setLatestError(null);
                     });
                   }}
-                  className="pointer-events-auto bg-white py-1 flex-none rounded-md px-2 py-[0.3125rem] font-medium text-slate-700 shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50"
-                >
-                  clear
-                </div>
-                <div
+                />
+                <Button
+                  content="copy"
                   onClick={() => {
                     const text = []
                       .concat(oldResponse, response)
@@ -343,18 +370,13 @@ const SelectAnalayse: React.FC = () => {
                       .join("\n");
                     navigator.clipboard.writeText(text);
                   }}
-                  className="pointer-events-auto bg-white py-1 flex-none rounded-md px-2 py-[0.3125rem] font-medium text-slate-700 shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50"
-                >
-                  copy
-                </div>
-                <div
+                />
+                <Button
+                  content="hide"
                   onClick={() => {
                     setHideResponse(true);
                   }}
-                  className="pointer-events-auto bg-white py-1 flex-none rounded-md px-2 py-[0.3125rem] font-medium text-slate-700 shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50"
-                >
-                  hide
-                </div>
+                />
               </div>
             </div>
           )}

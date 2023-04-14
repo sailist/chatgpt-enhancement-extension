@@ -1,55 +1,53 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import logo from "@assets/img/logo.svg";
-import "@pages/popup/Popup.css";
 import { MT, sendMessage } from "@src/common/message";
 import { Readability } from "@mozilla/readability";
+import Button from "@src/common/components/Button";
+import {
+  DEFAULT_SETTINGS,
+  SettingDict,
+  settingKeys,
+} from "../options/main/Setting";
+import { storage } from "@src/common";
 
 const Popup = () => {
+  const [settings, setSettings] = useState<SettingDict>({});
+
+  useEffect(() => {
+    storage.gets<SettingDict>(settingKeys).then((item) => {
+      setSettings(Object.assign({}, DEFAULT_SETTINGS, item));
+    });
+  });
+
   return (
-    <div className="App">
-      <button
+    <div
+      style={{
+        width: 200,
+      }}
+    >
+      <Button
+        content="Active"
         onClick={() => {
-          console.log("click");
-          sendMessage<any, number>({ type: MT.GET_GPT_TABID }).then(
-            (message) => {
-              console.log("injected result");
-              if (message.code === 200) {
-                const gptTabId = message.payload!;
-                chrome.tabs
-                  .query({ active: true, currentWindow: true }) // 查询当前 tab
-                  .then(function (tabs) {
-                    // 注入执行代码
-                    console.log("execute in currentTab");
-                    const currentTabId = tabs[0].id;
-
-                    return chrome.scripting.executeScript({
-                      target: { tabId: currentTabId },
-                      func: function () {
-                        return {
-                          body: document.body.outerHTML,
-                          url: document.URL,
-                        };
-                      },
-                    });
-                  }) // 注入执行代码
-                  .then(function (doc) {
-                    console.log("injected get result");
-
-                    const newDocument = new DOMParser().parseFromString(
-                      doc[0].result.body,
-                      "text/html"
-                    );
-                    const article = new Readability(newDocument, {}).parse();
-
-                    console.log(article.textContent);
-                  }); // 分析文档内容
-              }
-            }
-          );
+          sendMessage({ type: MT.ACTIVE_GPTPAGE });
         }}
-      >
-        try send
-      </button>
+      />
+      <Button
+        content="Option Page"
+        onClick={() => {
+          chrome.tabs.create({ url: "src/pages/options/index.html" });
+        }}
+      />
+      <div>Setting Values</div>
+      {Object.keys(settings).map((item, index) => {
+        const row = settings[item];
+        return (
+          <div key={index} className="flex flex col">
+            <div>
+              <b className="text-bold">{row.name}</b>: {row[row.type]}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 };

@@ -57,9 +57,9 @@ export default function PromptSelector(prop: PromptSelectorProp) {
       <div className="w-[20.5rem] divide-y divide-slate-200 rounded-lg bg-white text-[0.8125rem] leading-5 text-slate-900 shadow-xl shadow-black/5 ring-1 ring-slate-700/10">
         {Object.keys(prompts)
           .filter((item) => {
-            const { title, common } = prompts[item];
+            const { title, common, content } = prompts[item];
             // return true;
-            return common;
+            return common && content.trim().length > 0;
           })
           .map((item, index) => {
             const { title, content } = prompts[item];

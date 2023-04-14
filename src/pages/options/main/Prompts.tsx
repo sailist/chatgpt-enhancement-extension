@@ -185,7 +185,7 @@ export default function Prompts() {
       <div className="w-[40.5rem] divide-y divide-slate-200 rounded-lg bg-white text-[0.8125rem] leading-5 text-slate-900 shadow-xl shadow-black/5 ring-1 ring-slate-700/10">
         <SearchBar
           onChange={(event) => {
-            const text = event.target.value as string;
+            const text = (event.target as any).value as string;
             setFilter(text);
           }}
         />

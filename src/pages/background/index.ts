@@ -10,6 +10,7 @@ import {
   sendMessage,
   sendTabMessage,
 } from "@src/common/message";
+import { REGEX_GPTURL } from "@src/common/url";
 import reloadOnUpdate from "virtual:reload-on-update-in-background-script";
 
 reloadOnUpdate("pages/background");
@@ -26,8 +27,20 @@ const inMemory = {};
 
 const status: { tabid?: number } = {};
 
+const setIcon = (ava: boolean) => {
+  const avaStr = ava ? "ava" : "unava";
+  chrome.action.setIcon(
+    {
+      path: {
+        "32": `/icon-${avaStr}-32.png`,
+        "16": `/icon-${avaStr}-16.png`,
+      },
+    },
+    () => {}
+  );
+};
+
 addMessageListener<any, any>((message, sender, sendResponse) => {
-  console.log(message);
   if (message.type === MT.GET_RESPONSE_ID) {
     if (sender.tab && inMemory[sender.tab.id]) {
       sendResponse({
@@ -44,6 +57,8 @@ addMessageListener<any, any>((message, sender, sendResponse) => {
     }
   } else if (message.type === MT.REGISTER_GPT) {
     status["tabid"] = sender.tab.id;
+    console.log("ChatGPT registered");
+    setIcon(true);
   } else if (message.type === MT.GET_GPT_TABID) {
     if (status["tabid"]) {
       sendResponse({
@@ -83,7 +98,17 @@ addMessageListener<any, any>((message, sender, sendResponse) => {
         console.log("response success", message);
       });
     }
-  } else {
+  } else if (message.type === MT.ACTIVE_GPTPAGE) {
+    if (status.tabid) {
+      // chrome.tabs.
+      chrome.tabs.update(status.tabid, { active: true }).then(() => {});
+    } else {
+      chrome.tabs.create({ url: "https://chat.openai.com/" });
+    }
+  }
+  // const url = "https://chat.openai.com/";
+  //         window.open(url, "_blank");
+  else {
     sendResponse(FAIL_MSG(`no handler for ${message.type}`));
   }
 });
@@ -104,10 +129,10 @@ chrome.contextMenus.create({
   id: "ask",
   contexts: ["selection"],
 });
+
 chrome.contextMenus.onClicked.addListener((info, tab) => {
   // Code to execute when the context menu is clicked
   const gptTabId = status["tabid"];
-  const queryOptions = { active: true, lastFocusedWindow: true };
   if (gptTabId) {
     if (info.pageUrl.startsWith("chrome-extension")) {
       const typedMsg: PARSE_SELECTION = {
@@ -122,22 +147,37 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
         }
       );
     } else {
-      // `tab` will either be a `tabs.Tab` instance or `undefined`.
-      chrome.tabs.query(queryOptions).then((tabs) => {
-        const typedMsg: PARSE_SELECTION = {
-          code: 200,
-          type: MT.PARSE_SELECTION,
-          payload: { content: info.selectionText, fromTab: tabs[0].id },
-        };
+      const typedMsg: PARSE_SELECTION = {
+        code: 200,
+        type: MT.PARSE_SELECTION,
+        payload: { content: info.selectionText, fromTab: tab.id },
+      };
 
-        sendTabMessage<PARSE_SELECTION["payload"], any>(
-          gptTabId,
-          typedMsg
-        ).then((message) => {
+      sendTabMessage<PARSE_SELECTION["payload"], any>(gptTabId, typedMsg).then(
+        (message) => {
           console.log("send page question");
-        });
-      });
+        }
+      );
     }
   }
   console.log(info, tab);
+});
+
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (status["tabid"] === tab.id && !REGEX_GPTURL.test(tab.url)) {
+    status["tabid"] = undefined;
+    console.log(changeInfo);
+    console.log(tab);
+    console.log("ChatGPT unused");
+    setIcon(false);
+  }
+});
+
+chrome.tabs.onRemoved.addListener((tabid, info) => {
+  console.log(tabid, info);
+  console.log(status);
+  if (status.tabid === tabid) {
+    setIcon(false);
+    status.tabid = undefined;
+  }
 });

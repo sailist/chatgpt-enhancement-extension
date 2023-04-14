@@ -301,7 +301,7 @@ export default function RegPrompts(props: PromptsProp) {
         {!sidebar && (
           <SearchBar
             onChange={(event) => {
-              const text = event.target.value as string;
+              const text = (event.target as any).value as string;
               setFilter(text);
             }}
           />
