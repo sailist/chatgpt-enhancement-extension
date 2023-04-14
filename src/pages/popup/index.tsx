@@ -14,5 +14,5 @@ function init() {
   const root = createRoot(appContainer);
   root.render(<Popup />);
 }
-
-init();
+// init();
+chrome.tabs.create({ url: "src/pages/options/index.html" });

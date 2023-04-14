@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import clsx from "clsx";
 import { DEFAULT_PROMPT } from "@src/pages/options/main/Prompts";
+import { storage } from "@src/common";
 
 type PromptValue = { title: string; content: string };
 type Prompts = {
@@ -28,7 +29,6 @@ export default function PromptSelector(prop: PromptSelectorProp) {
     { filter: "", onSelect: () => {} },
     prop
   );
-  // const [selected, setSelected] = useState("");
   const selectRef = useRef("");
   const [prompts, setPrompts] = useState<Prompts>(DEFAULT_PROMPT);
 
@@ -39,26 +39,21 @@ export default function PromptSelector(prop: PromptSelectorProp) {
   }, [selectDone]);
 
   useEffect(() => {
-    chrome.storage.local.get(
-      { prompt_keys: ["default"] } as { prompt_keys: PromptKeys },
-      (items) => {
-        const { prompt_keys } = items as { prompt_keys: PromptKeys };
-        console.log("type keys", prompt_keys);
-        chrome.storage.local.get(__(prompt_keys), (items) => {
-          console.log("type initial", items);
-          if (Object.keys(items).length > 0) {
-            const newPrompts = Object.assign({}, items);
-            setPrompts(newPrompts);
-          }
-        });
-      }
-    );
+    storage.get<string[]>("prompt_keys", []).then((prompt_keys) => {
+      console.log("type keys", prompt_keys);
+      storage.gets(__(prompt_keys)).then((newPrompts: Prompts) => {
+        if (Object.keys(newPrompts).length > 0) {
+          setPrompts(newPrompts);
+        }
+      });
+    });
   }, []);
+
   const lastIndex = Object.keys(prompts).length - 1;
 
   return (
     <div className="">
-      <div className="w-[40.5rem] divide-y divide-slate-400/20 rounded-lg bg-white text-[0.8125rem] leading-5 text-slate-900 shadow-xl shadow-black/5 ring-1 ring-slate-700/10">
+      <div className="w-[40.5rem] divide-y divide-slate-200 rounded-lg bg-white text-[0.8125rem] leading-5 text-slate-900 shadow-xl shadow-black/5 ring-1 ring-slate-700/10">
         {Object.keys(prompts)
           .filter((item) => {
             const { title } = prompts[item];

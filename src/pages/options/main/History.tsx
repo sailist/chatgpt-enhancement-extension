@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
-import clsx from "clsx";
 import { getCurrentTime } from "../utils";
 import JSZip from "jszip";
+import { storage } from "@src/common";
+import SearchBar from "@src/common/components/SearchBar";
 
 type PromptValue = {
   chatid: string;
@@ -23,7 +24,7 @@ function __(k: string[]) {
 }
 export const DEFAULT_PROMPT = {};
 
-function LongContent({ chatid, content }: { chatid: string; content: string }) {
+function LongContent({ chatid, title, content }: PromptValue) {
   const [expand, setExpand] = useState(false);
   return (
     <>
@@ -45,6 +46,7 @@ function LongContent({ chatid, content }: { chatid: string; content: string }) {
           {expand ? "fold" : "unfold"}
         </a>
       </div>
+      <p className="text-lg">{title}</p>
       <div className="break-words mt-1 text-slate-700 whitespace-pre-line">
         {expand ? (
           content
@@ -70,10 +72,6 @@ export default function History() {
   const [edit, setEdit] = useState(-1);
   const [format, setFormat] = useState("json");
 
-  const [editContent, setEditContent] = useState<PromptValue>({
-    chatid: "",
-    content: "",
-  });
   const dropzoneRef = useRef<any>();
   const [filter, setFilter] = useState("");
   const [prompts, setPrompts] = useState<Prompts>(DEFAULT_PROMPT);
@@ -82,52 +80,26 @@ export default function History() {
 
   useEffect(() => {
     console.log("keys");
-
-    chrome.storage.local.get(
-      { chatgptHistoryIds: [] } as { chatgptHistoryIds: HistoryKeys },
-      (items) => {
-        const { chatgptHistoryIds } = items as {
-          chatgptHistoryIds: HistoryKeys;
-        };
-        chrome.storage.local.get(__(chatgptHistoryIds), (items) => {
-          console.log("initial", items);
-          if (Object.keys(items).length > 0) {
-            const newPrompts = Object.assign({}, items);
+    storage
+      .get<HistoryKeys>("chatgptHistoryIds", [])
+      .then((chatgptHistoryIds) => {
+        storage.gets(__(chatgptHistoryIds)).then((newPrompts: Prompts) => {
+          if (Object.keys(newPrompts).length > 0) {
             setPrompts(newPrompts);
           }
         });
-      }
-    );
+      });
   }, []);
 
   const removePrompt = (title: string) => {
-    chrome.storage.local.get(
-      { prompt_keys: ["default"] } as { prompt_keys: HistoryKeys },
-      (items) => {
-        const { prompt_keys } = items as { prompt_keys: HistoryKeys };
-        const res: { [key: string]: any } = {};
-        const newPromptKeys = prompt_keys.filter((item) => item !== title);
-        chrome.storage.local.remove(_(title), () => {
-          chrome.storage.local.set({ prompt_keys: newPromptKeys }, () => {
-            const newPrompts = Object.assign({}, prompts);
-            delete newPrompts[_(title)];
-            setPrompts(newPrompts);
-          });
+    storage.get<HistoryKeys>("prompt_keys", ["default"]).then((prompt_keys) => {
+      const newPromptKeys = prompt_keys.filter((item) => item !== title);
+      storage.remove(_(title)).then(() => {
+        storage.set("prompt_keys", newPromptKeys).then(() => {
+          const newPrompts = Object.assign({}, prompts);
+          delete newPrompts[_(title)];
+          setPrompts(newPrompts);
         });
-      }
-    );
-  };
-
-  const setPrompt = (chatid: string, title?: string) => {
-    chrome.storage.local.get(chatid, (items) => {
-      const content = items[chatid] as PromptValue;
-      content.title = title;
-      const res = {};
-      res[chatid] = content;
-      chrome.storage.local.set(res, () => {
-        const newPrompts = Object.assign({}, prompts);
-        newPrompts[chatid] = content;
-        setPrompts(newPrompts);
       });
     });
   };
@@ -159,68 +131,33 @@ export default function History() {
     // zip.file()
   };
 
-  const prepareText = (filterd: boolean = false) => {
-    let res = Object.keys(prompts).map((item) => {
-      return prompts[item];
-    });
-    if (filterd) {
-      res = res.filter((item) => {
-        return item.chatid.indexOf(filter) >= 0;
-      });
-    }
-    if (format === "json") {
-      return JSON.stringify(res);
-    } else {
-      const text = res
-        .map((item) => {
-          return "## " + item.chatid + "\n\n" + item.content + "\n\n";
-        })
-        .join("\n");
-      return text;
-    }
-  };
-
-  const handleImport = (jsonStr: string) => {
-    const importPrompts: PromptValue[] = JSON.parse(jsonStr);
-    chrome.storage.local.get(
-      { prompt_keys: ["default"] } as { prompt_keys: HistoryKeys },
-      (items) => {
-        const res: { [key: string]: any } = {};
-        importPrompts.forEach((item) => {
-          res[_(item.chatid)] = item;
-        });
-
-        const newPrompts = Object.assign({}, prompts, res);
-        const { prompt_keys } = items as { prompt_keys: HistoryKeys };
-        const newPrompKeys = Array.from(
-          new Set(prompt_keys.concat(importPrompts.map((item) => item.chatid)))
-        );
-        res["prompt_keys"] = newPrompKeys;
-
-        chrome.storage.local.set(res, () => {
-          setPrompts(newPrompts);
-        });
-      }
-    );
-  };
-
   return (
     <div className="flex flex-row">
-      <div className="w-[40.5rem] divide-y divide-slate-400/20 rounded-lg bg-white text-[0.8125rem] leading-5 text-slate-900 shadow-xl shadow-black/5 ring-1 ring-slate-700/10">
-        <div className="bg-white sticky top-0 hidden w-full lg:flex items-center text-sm leading-6 text-slate-400 rounded-md ring-1 ring-slate-900/10 shadow-sm py-1.5 pl-2 pr-3 hover:ring-slate-300 dark:bg-slate-800 dark:highlight-white/5 dark:hover:bg-slate-700">
+      <div className="w-[40.5rem] divide-y divide-slate-200 rounded-lg bg-white text-[0.8125rem] leading-5 text-slate-900 shadow-xl shadow-black/5 ring-1 ring-slate-700/10">
+        <SearchBar
+          onChange={(event) => {
+            const text = event.target.value as string;
+            setFilter(text);
+          }}
+        />
+        {/* <div className="bg-white sticky top-0 hidden lg:flex items-center text-sm leading-6 text-slate-400 rounded-md ring-1 ring-slate-900/10 shadow-sm py-1.5 pl-2 pr-3">
           <input
             placeholder="search"
             onChange={(event) => {
               const text = event.target.value as string;
               setFilter(text);
             }}
-            className="placehold min-h-0 h-auto resize-y font-medium block w-full rounded-md border-0 py-1.5 pl-4 pr-4
+            className="placehold min-h-0 w-full h-auto resize-y font-medium block rounded-md border-0 py-1.5 pl-4 pr-4
                     text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-1 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
           />
-        </div>
+        </div> */}
         {Object.keys(prompts).map((item, index) => {
           const { chatid, content, date, title } = prompts[item];
-          if (filter.trim().length > 0 && chatid.indexOf(filter) < 0) {
+          if (
+            filter.trim().length > 0 &&
+            title.toLowerCase().indexOf(filter.toLowerCase()) < 0 &&
+            chatid.indexOf(filter) < 0
+          ) {
             return <div key={index}></div>;
           }
 
@@ -248,7 +185,12 @@ export default function History() {
                       </div>
                     </div>
                   </div>
-                  <LongContent chatid={chatid} content={content} />
+                  <LongContent
+                    title={title}
+                    date={date}
+                    chatid={chatid}
+                    content={content}
+                  />
                 </div>
               </>{" "}
             </div>
@@ -262,9 +204,9 @@ export default function History() {
             backupZip();
           }}
           ref={dropzoneRef}
-          className="w-full border border-dashed py-2 pointer-events-auto m-2 rounded-md px-2 font-medium text-slate-700 ring-1 ring-slate-700/10 hover:bg-slate-50"
+          className="w-full border py-2 pointer-events-auto m-2 rounded-md px-2 font-medium text-slate-700 ring-1 ring-slate-700/10 hover:bg-slate-50"
         >
-          Backup
+          {inBackup ? "Preparing" : "Backup"}
         </div>
       </div>
     </div>

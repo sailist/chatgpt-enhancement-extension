@@ -19,3 +19,27 @@ export function applyStyle(el: HTMLElement, styles: { [key: string]: string }) {
     el.style[key as any] = styles[key];
   }
 }
+
+export function isFatherHasClass(el: Node, className) {
+  while (el) {
+    if (el instanceof HTMLElement) {
+      if (el.classList.contains(className)) {
+        return true;
+      }
+    }
+    el = el.parentElement;
+  }
+  return false;
+}
+
+export function isFatherHasId(el: Node, id: string) {
+  while (el) {
+    if (el instanceof HTMLElement) {
+      if (el.id === id) {
+        return true;
+      }
+    }
+    el = el.parentElement;
+  }
+  return false;
+}

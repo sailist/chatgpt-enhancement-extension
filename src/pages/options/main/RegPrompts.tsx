@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import clsx from "clsx";
 import { getCurrentTime } from "../utils";
+import { storage } from "@src/common";
+import SearchBar from "@src/common/components/SearchBar";
+import Button from "@src/common/components/Button";
 
 const CONST_KEYNAME = "reg_prompt_key";
 
@@ -102,20 +105,13 @@ export default function RegPrompts(props: PromptsProp) {
   const [prompts, setPrompts] = useState<RegPrompts>(DEFAULT_REGPROMPT);
 
   useEffect(() => {
-    console.log("keys");
-
-    chrome.storage.local.get(
-      { reg_prompt_keys: ["default"], currentRegPrompt: null } as {
+    storage
+      .gets<{
         reg_prompt_keys: RegPromptKeys;
         currentRegPrompt: RegPromptValue;
-      },
-      (items) => {
-        const { reg_prompt_keys, currentRegPrompt } = items as {
-          reg_prompt_keys: RegPromptKeys;
-          currentRegPrompt: RegPromptValue;
-        };
-
-        chrome.storage.local.get(__(reg_prompt_keys), (items) => {
+      }>({ reg_prompt_keys: ["default"], currentRegPrompt: null })
+      .then(({ reg_prompt_keys, currentRegPrompt }) => {
+        storage.gets<RegPrompts>(__(reg_prompt_keys)).then((items) => {
           if (sidebar) {
             if (currentRegPrompt) {
               setMenuSelected(currentRegPrompt.title);
@@ -128,8 +124,7 @@ export default function RegPrompts(props: PromptsProp) {
             }
           }
         });
-      }
-    );
+      });
   }, []);
 
   const addRegexItem = () => {
@@ -156,7 +151,6 @@ export default function RegPrompts(props: PromptsProp) {
 
   const setEditTitle = (title: string) => {
     setEditContent({ ...editContent, title: title });
-    console.log({ ...editContent, title: title });
   };
 
   const setEditPromptItem = (prompt: string, index: number) => {
@@ -166,21 +160,18 @@ export default function RegPrompts(props: PromptsProp) {
   };
 
   const removePrompt = (title: string) => {
-    chrome.storage.local.get(
-      { reg_prompt_keys: ["default"] } as { reg_prompt_keys: RegPromptKeys },
-      (items) => {
-        const { reg_prompt_keys } = items as { reg_prompt_keys: RegPromptKeys };
-        const res: { [key: string]: any } = {};
+    storage
+      .get<RegPromptKeys>("reg_prompt_keys", ["default"])
+      .then((reg_prompt_keys) => {
         const newPromptKeys = reg_prompt_keys.filter((item) => item !== title);
-        chrome.storage.local.remove(_(title), () => {
-          chrome.storage.local.set({ reg_prompt_keys: newPromptKeys }, () => {
+        storage.remove(_(title)).then(() => {
+          storage.sets({ reg_prompt_keys: newPromptKeys }).then(() => {
             const newPrompts = Object.assign({}, prompts);
             delete newPrompts[_(title)];
             setPrompts(newPrompts);
           });
         });
-      }
-    );
+      });
   };
 
   const setPrompt = (
@@ -188,11 +179,10 @@ export default function RegPrompts(props: PromptsProp) {
     content: RegPromptValue,
     oldTitle?: string
   ) => {
-    chrome.storage.local.get(
-      { reg_prompt_keys: ["default"] } as { reg_prompt_keys: RegPromptKeys },
-      (items) => {
+    storage
+      .get<RegPromptKeys>("reg_prompt_keys", ["default"])
+      .then((reg_prompt_keys) => {
         const title = content.title;
-        const { reg_prompt_keys } = items as { reg_prompt_keys: RegPromptKeys };
         const res: { [key: string]: any } = {};
         const newPrompKeys = reg_prompt_keys.filter(
           (item) => item !== oldTitle
@@ -203,7 +193,7 @@ export default function RegPrompts(props: PromptsProp) {
           delete res[_(oldTitle)];
         }
         res[_(title)] = content;
-        chrome.storage.local.set(res, () => {
+        storage.sets(res).then(() => {
           const newPrompts = Object.assign({}, prompts);
           newPrompts[_(title)] = content;
           if (oldTitle !== title) {
@@ -211,8 +201,7 @@ export default function RegPrompts(props: PromptsProp) {
           }
           setPrompts(newPrompts);
         });
-      }
-    );
+      });
   };
 
   const handleDragOver: React.DragEventHandler<HTMLDivElement> = (event) => {
@@ -271,16 +260,15 @@ export default function RegPrompts(props: PromptsProp) {
 
   const handleImport = (jsonStr: string) => {
     const importPrompts: RegPromptValue[] = JSON.parse(jsonStr);
-    chrome.storage.local.get(
-      { reg_prompt_keys: ["default"] } as { reg_prompt_keys: RegPromptKeys },
-      (items) => {
+    storage
+      .get<RegPromptKeys>("reg_prompt_keys", ["default"])
+      .then((reg_prompt_keys) => {
         const res: { [key: string]: any } = {};
         importPrompts.forEach((item) => {
           res[_(item.title)] = item;
         });
 
         const newPrompts = Object.assign({}, prompts, res);
-        const { reg_prompt_keys } = items as { reg_prompt_keys: RegPromptKeys };
         const newPrompKeys = Array.from(
           new Set(
             reg_prompt_keys.concat(importPrompts.map((item) => item.title))
@@ -288,15 +276,13 @@ export default function RegPrompts(props: PromptsProp) {
         );
         res["reg_prompt_keys"] = newPrompKeys;
 
-        chrome.storage.local.set(res, () => {
+        storage.sets(res).then(() => {
           setPrompts(newPrompts);
         });
-      }
-    );
+      });
   };
 
   const handleFile = (file: File) => {
-    console.log(file);
     const reader = new FileReader();
 
     reader.addEventListener("load", (event) => {
@@ -307,23 +293,20 @@ export default function RegPrompts(props: PromptsProp) {
     reader.readAsText(file);
   };
 
-  console.log(maxIndex);
   return (
     <div className="flex flex-row">
-      <div className="w-[40.5rem] divide-y divide-slate-400/20 rounded-lg bg-white text-[0.8125rem] leading-5 text-slate-900 shadow-xl shadow-black/5 ring-1 ring-slate-700/10">
+      {/* 左栏 */}
+      <div className="w-full divide-y divide-slate-200 rounded-lg bg-white text-[0.8125rem] leading-5 text-slate-900 shadow-xl shadow-black/5 ring-1 ring-slate-700/10">
+        {/* 搜索框，用于 option */}
         {!sidebar && (
-          <div className="sticky bg-white top-0 hidden w-full lg:flex items-center text-sm leading-6 text-slate-400 rounded-md ring-1 ring-slate-900/10 shadow-sm py-1.5 pl-2 pr-3 hover:ring-slate-300 dark:bg-slate-800 dark:highlight-white/5 dark:hover:bg-slate-700">
-            <input
-              placeholder="search"
-              onChange={(event) => {
-                const text = event.target.value as string;
-                setFilter(text);
-              }}
-              className="placehold min-h-0 h-auto resize-y font-medium block w-full rounded-md border-0 py-1.5 pl-4 pr-4
-                    text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-1 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-            />
-          </div>
+          <SearchBar
+            onChange={(event) => {
+              const text = event.target.value as string;
+              setFilter(text);
+            }}
+          />
         )}
+        {/* 下拉框，用于 GPT Page */}
         <div>
           {sidebar && (
             <div className="relative mt-2">
@@ -369,7 +352,7 @@ export default function RegPrompts(props: PromptsProp) {
             </div>
           )}
         </div>
-
+        {/* 内容 */}
         {Object.keys(prompts)
           .concat(["---"])
           .map((item, index) => {
@@ -398,28 +381,15 @@ export default function RegPrompts(props: PromptsProp) {
                   </div>
                   <div
                     onClick={() => {
-                      chrome.storage.local.get(
-                        { reg_prompt_keys: ["default"] } as {
-                          reg_prompt_keys: RegPromptKeys;
-                        },
-                        (items) => {
-                          const { reg_prompt_keys } = items as {
-                            reg_prompt_keys: RegPromptKeys;
-                          };
-
-                          chrome.storage.local.remove(
-                            __(reg_prompt_keys),
-                            () => {
-                              chrome.storage.local.set(
-                                { reg_prompt_keys: [] },
-                                () => {
-                                  setPrompts({});
-                                }
-                              );
-                            }
-                          );
-                        }
-                      );
+                      storage
+                        .get<RegPromptKeys>("reg_prompt_keys", ["default"])
+                        .then((reg_prompt_keys) => {
+                          storage.remove(__(reg_prompt_keys)).then(() => {
+                            storage.set("reg_prompt_keys", []).then(() => {
+                              setPrompts({});
+                            });
+                          });
+                        });
                     }}
                     className="w-full text-white bg-red-500 py-2 pointer-events-auto m-2 rounded-md px-2 font-medium shadow-sm ring-1 ring-slate-700/10 hover:bg-red-700 "
                   >
@@ -521,7 +491,6 @@ export default function RegPrompts(props: PromptsProp) {
                           placeholder="prefix"
                           onChange={(event) => {
                             setEditPrefix(event.target.value);
-                            console.log(event.target.value);
                           }}
                           value={editContent.prefix}
                         />
@@ -614,9 +583,10 @@ export default function RegPrompts(props: PromptsProp) {
             );
           })}
       </div>
+      {/* 右栏按钮组，用于 option */}
       {!sidebar && (
-        <div className="sticky top-0 m-4">
-          <div className="flex flex-row">
+        <div className="sticky top-0 m-4 w-auto">
+          <div className="flex flex-row w-full">
             <div
               onClick={() => {
                 setFormat("json");
@@ -658,36 +628,7 @@ export default function RegPrompts(props: PromptsProp) {
           >
             Copy Filtered
           </div>
-          <div
-            onClick={() => {
-              const input = document.createElement("input");
-              input.type = "file";
-              input.addEventListener("change", (event) => {
-                const file = event.target.files[0];
-                handleFile(file);
-              });
-              input.click();
-            }}
-            ref={dropzoneRef}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            className="w-full border border-dashed py-2 pointer-events-auto m-2 rounded-md px-2 font-medium text-slate-700 ring-1 ring-slate-700/10 hover:bg-slate-50"
-          >
-            Import (from Json File)
-          </div>
-          <div
-            onClick={() => {
-              navigator.clipboard.readText().then((item) => {
-                handleImport(item);
-              });
-            }}
-            ref={dropzoneRef}
-            className="w-full border border-dashed py-2 pointer-events-auto m-2 rounded-md px-2 font-medium text-slate-700 ring-1 ring-slate-700/10 hover:bg-slate-50"
-          >
-            Import (from Clipboard)
-          </div>
-          <div
+          <Button
             onClick={() => {
               const blob = new Blob([prepareText()], {
                 type: "text/plain;charset=utf-8",
@@ -701,11 +642,37 @@ export default function RegPrompts(props: PromptsProp) {
               link.click();
               URL.revokeObjectURL(url);
             }}
+            wFull
+            content={"Backup"}
+          />
+          <div
+            onClick={() => {
+              const input = document.createElement("input");
+              input.type = "file";
+              input.addEventListener("change", (event) => {
+                const file = (event.target as any).files[0];
+                handleFile(file);
+              });
+              input.click();
+            }}
             ref={dropzoneRef}
-            className="w-full border border-dashed py-2 pointer-events-auto m-2 rounded-md px-2 font-medium text-slate-700 ring-1 ring-slate-700/10 hover:bg-slate-50"
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            className="w-full border border-dashed border-slate-300 py-2 pointer-events-auto m-2 rounded-md px-2 font-medium text-slate-700 ring-1 ring-slate-700/10 hover:bg-slate-50"
           >
-            Backup
+            Import (from Json File)
           </div>
+
+          <Button
+            onClick={() => {
+              navigator.clipboard.readText().then((item) => {
+                handleImport(item);
+              });
+            }}
+            wFull
+            content={"Import (from Clipboard)"}
+          />
         </div>
       )}
     </div>

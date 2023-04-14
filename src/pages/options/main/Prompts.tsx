@@ -1,99 +1,108 @@
 import React, { useState, useEffect, useRef } from "react";
 import clsx from "clsx";
 import { getCurrentTime } from "../utils";
+import { storage } from "@src/common";
+import SearchBar from "@src/common/components/SearchBar";
 
-type PromptValue = { title: string; content: string };
-type Prompts = {
+export type PromptValue = { title: string; content: string; common?: boolean };
+export type Prompts = {
   [key: string]: PromptValue;
 };
 
-type PromptKeys = string[];
+export type PromptKeys = string[];
 
-function _(k: string) {
+export function _(k: string) {
   return "p+" + k;
 }
-function __(k: string[]) {
+export function __(k: string[]) {
   return k.map((item) => _(item));
 }
-export const DEFAULT_PROMPT = {
+export const EMPTY_PROMPT: PromptValue = {
+  title: "",
+  content: "",
+  common: false,
+};
+
+export const DEFAULT_PROMPT: Prompts = {
   default: { title: "default", content: "I'm chatgpt-enhancement-extension" },
   defaultCh: { title: "中文", content: "我是 chatgpt-enhancement-extension" },
+  defaultForSelect: {
+    title: "Explain",
+    content: "Explain this text",
+    common: true,
+  },
+  defaultForSelectCh: {
+    title: "解释这段话",
+    content: "这段话是什么意思",
+    common: true,
+  },
 };
 
 export default function Prompts() {
   const [edit, setEdit] = useState(-1);
   const [format, setFormat] = useState("json");
 
-  const [editContent, setEditContent] = useState<PromptValue>({
-    title: "",
-    content: "",
-  });
+  const [editContent, setEditContent] = useState<PromptValue>(EMPTY_PROMPT);
   const dropzoneRef = useRef<any>();
   const [filter, setFilter] = useState("");
   const [prompts, setPrompts] = useState<Prompts>(DEFAULT_PROMPT);
 
   useEffect(() => {
-    console.log("keys");
-
-    chrome.storage.local.get(
-      { prompt_keys: ["default"] } as { prompt_keys: PromptKeys },
-      (items) => {
-        const { prompt_keys } = items as { prompt_keys: PromptKeys };
-        console.log("keys", prompt_keys);
-        chrome.storage.local.get(__(prompt_keys), (items) => {
-          console.log("initial", items);
+    storage.get<PromptKeys>("prompt_keys", []).then((prompt_keys) => {
+      if (prompt_keys.length === 0) {
+        const res = {};
+        Object.keys(DEFAULT_PROMPT).forEach((item) => {
+          res[_(DEFAULT_PROMPT[item].title)] = DEFAULT_PROMPT[item];
+        });
+        storage.sets(res).then(() => {
+          storage.gets(__(prompt_keys)).then((items: Prompts) => {
+            if (Object.keys(items).length > 0) {
+              const newPrompts = Object.assign({}, items);
+              setPrompts(newPrompts);
+            }
+          });
+        });
+      } else {
+        storage.gets(__(prompt_keys)).then((items: Prompts) => {
           if (Object.keys(items).length > 0) {
             const newPrompts = Object.assign({}, items);
             setPrompts(newPrompts);
           }
         });
       }
-    );
+    });
   }, []);
 
   const removePrompt = (title: string) => {
-    chrome.storage.local.get(
-      { prompt_keys: ["default"] } as { prompt_keys: PromptKeys },
-      (items) => {
-        const { prompt_keys } = items as { prompt_keys: PromptKeys };
-        const res: { [key: string]: any } = {};
-        const newPromptKeys = prompt_keys.filter((item) => item !== title);
-        chrome.storage.local.remove(_(title), () => {
-          chrome.storage.local.set({ prompt_keys: newPromptKeys }, () => {
-            const newPrompts = Object.assign({}, prompts);
-            delete newPrompts[_(title)];
-            setPrompts(newPrompts);
-          });
-        });
-      }
-    );
-  };
-
-  const setPrompt = (
-    title: string,
-    content: PromptValue,
-    oldTitle?: string
-  ) => {
-    chrome.storage.local.get(
-      { prompt_keys: ["default"] } as { prompt_keys: PromptKeys },
-      (items) => {
-        const title = content.title;
-        const { prompt_keys } = items as { prompt_keys: PromptKeys };
-        const res: { [key: string]: any } = {};
-        const newPrompKeys = prompt_keys.filter((item) => item !== oldTitle);
-        newPrompKeys.push(title);
-        res["prompt_keys"] = newPrompKeys;
-        if (oldTitle) {
-          delete res[_(oldTitle)];
-        }
-        res[_(title)] = content;
-        chrome.storage.local.set(res, () => {
+    storage.get<PromptKeys>("prompt_keys", []).then((prompt_keys) => {
+      const newPromptKeys = prompt_keys.filter((item) => item !== title);
+      storage.remove(_(title)).then(() => {
+        storage.sets({ prompt_keys: newPromptKeys }).then(() => {
           const newPrompts = Object.assign({}, prompts);
-          newPrompts[_(title)] = content;
+          delete newPrompts[_(title)];
           setPrompts(newPrompts);
         });
+      });
+    });
+  };
+
+  const setPrompt = (content: PromptValue, oldTitle?: string) => {
+    storage.get<PromptKeys>("prompt_keys", []).then((prompt_keys) => {
+      const title = content.title;
+      const res: { [key: string]: any } = {};
+      const newPrompKeys = prompt_keys.filter((item) => item !== oldTitle);
+      newPrompKeys.push(title);
+      res["prompt_keys"] = newPrompKeys;
+      if (oldTitle) {
+        delete res[_(oldTitle)];
       }
-    );
+      res[_(title)] = content;
+      storage.sets(res).then(() => {
+        const newPrompts = Object.assign({}, prompts);
+        newPrompts[_(title)] = content;
+        setPrompts(newPrompts);
+      });
+    });
   };
 
   const prepareText = (filterd: boolean = false) => {
@@ -119,26 +128,22 @@ export default function Prompts() {
 
   const handleImport = (jsonStr: string) => {
     const importPrompts: PromptValue[] = JSON.parse(jsonStr);
-    chrome.storage.local.get(
-      { prompt_keys: ["default"] } as { prompt_keys: PromptKeys },
-      (items) => {
-        const res: { [key: string]: any } = {};
-        importPrompts.forEach((item) => {
-          res[_(item.title)] = item;
-        });
+    storage.get<PromptKeys>("prompt_keys", ["default"]).then((prompt_keys) => {
+      const res: { [key: string]: any } = {};
+      importPrompts.forEach((item) => {
+        res[_(item.title)] = item;
+      });
 
-        const newPrompts = Object.assign({}, prompts, res);
-        const { prompt_keys } = items as { prompt_keys: PromptKeys };
-        const newPrompKeys = Array.from(
-          new Set(prompt_keys.concat(importPrompts.map((item) => item.title)))
-        );
-        res["prompt_keys"] = newPrompKeys;
+      const newPrompts = Object.assign({}, prompts, res);
+      const newPrompKeys = Array.from(
+        new Set(prompt_keys.concat(importPrompts.map((item) => item.title)))
+      );
+      res["prompt_keys"] = newPrompKeys;
 
-        chrome.storage.local.set(res, () => {
-          setPrompts(newPrompts);
-        });
-      }
-    );
+      storage.sets(res).then(() => {
+        setPrompts(newPrompts);
+      });
+    });
   };
 
   const handleFile = (file: File) => {
@@ -177,22 +182,17 @@ export default function Prompts() {
   console.log(maxIndex);
   return (
     <div className="flex flex-row">
-      <div className="w-[40.5rem] divide-y divide-slate-400/20 rounded-lg bg-white text-[0.8125rem] leading-5 text-slate-900 shadow-xl shadow-black/5 ring-1 ring-slate-700/10">
-        <div className="sticky bg-white top-0 hidden w-full lg:flex items-center text-sm leading-6 text-slate-400 rounded-md ring-1 ring-slate-900/10 shadow-sm py-1.5 pl-2 pr-3 hover:ring-slate-300 dark:bg-slate-800 dark:highlight-white/5 dark:hover:bg-slate-700">
-          <input
-            placeholder="search"
-            onChange={(event) => {
-              const text = event.target.value as string;
-              setFilter(text);
-            }}
-            className="placehold min-h-0 h-auto resize-y font-medium block w-full rounded-md border-0 py-1.5 pl-4 pr-4
-                    text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-1 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-          />
-        </div>
+      <div className="w-[40.5rem] divide-y divide-slate-200 rounded-lg bg-white text-[0.8125rem] leading-5 text-slate-900 shadow-xl shadow-black/5 ring-1 ring-slate-700/10">
+        <SearchBar
+          onChange={(event) => {
+            const text = event.target.value as string;
+            setFilter(text);
+          }}
+        />
         {Object.keys(prompts)
           .concat(["---"])
           .map((item, index) => {
-            const { title, content } = prompts[item] || editContent;
+            const { title, content, common } = prompts[item] || editContent;
             if (filter.trim().length > 0 && title.indexOf(filter) < 0) {
               return <div key={index}></div>;
             }
@@ -211,25 +211,15 @@ export default function Prompts() {
                   </div>
                   <div
                     onClick={() => {
-                      chrome.storage.local.get(
-                        { prompt_keys: ["default"] } as {
-                          prompt_keys: PromptKeys;
-                        },
-                        (items) => {
-                          const { prompt_keys } = items as {
-                            prompt_keys: PromptKeys;
-                          };
-
-                          chrome.storage.local.remove(__(prompt_keys), () => {
-                            chrome.storage.local.set(
-                              { prompt_keys: [] },
-                              () => {
-                                setPrompts({});
-                              }
-                            );
+                      storage
+                        .get<PromptKeys>("prompt_keys", ["default"])
+                        .then((prompt_keys) => {
+                          storage.remove(__(prompt_keys)).then(() => {
+                            storage.set("prompt_keys", []).then(() => {
+                              setPrompts({});
+                            });
                           });
-                        }
-                      );
+                        });
                     }}
                     className="w-full text-white bg-red-500 py-2 pointer-events-auto m-2 rounded-md px-2 font-medium shadow-sm ring-1 ring-slate-700/10 hover:bg-red-700 "
                   >
@@ -270,7 +260,7 @@ export default function Prompts() {
                     <div className="flex flex-col">
                       <div
                         onClick={() => {
-                          setPrompt("unused", editContent, title);
+                          setPrompt(editContent, title);
                           setEdit(-1);
                         }}
                         className="pointer-events-auto ml-4 flex-none rounded-md px-2 py-[0.3125rem] font-medium text-slate-700 shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50"
@@ -293,6 +283,23 @@ export default function Prompts() {
                     <div className="w-full">
                       <div className="mr-2 break-words font-medium">
                         <div className="float-right pl-4 flex flex-row">
+                          <div
+                            onClick={() => {
+                              if (common) {
+                                setPrompt({ ...prompts[item], common: false });
+                              } else {
+                                setPrompt({ ...prompts[item], common: true });
+                              }
+                            }}
+                            className="item-center pointer-events-auto flex-none rounded-md px-2 py-[0.3125rem] font-medium"
+                          >
+                            <button
+                              className={clsx(
+                                "hover:bg-yellow-300 rounded-full my-auto h-3 w-3",
+                                common ? "bg-yellow-200" : "bg-yellow-500"
+                              )}
+                            ></button>
+                          </div>
                           <div
                             onClick={() => {
                               setEditContent(prompts[item]);
@@ -376,35 +383,6 @@ export default function Prompts() {
         </div>
         <div
           onClick={() => {
-            const input = document.createElement("input");
-            input.type = "file";
-            input.addEventListener("change", (event) => {
-              const file = event.target.files[0];
-              handleFile(file);
-            });
-            input.click();
-          }}
-          ref={dropzoneRef}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          className="w-full border border-dashed py-2 pointer-events-auto m-2 rounded-md px-2 font-medium text-slate-700 ring-1 ring-slate-700/10 hover:bg-slate-50"
-        >
-          Import (from Json File)
-        </div>
-        <div
-          onClick={() => {
-            navigator.clipboard.readText().then((item) => {
-              handleImport(item);
-            });
-          }}
-          ref={dropzoneRef}
-          className="w-full border border-dashed py-2 pointer-events-auto m-2 rounded-md px-2 font-medium text-slate-700 ring-1 ring-slate-700/10 hover:bg-slate-50"
-        >
-          Import (from Clipboard)
-        </div>
-        <div
-          onClick={() => {
             const blob = new Blob([prepareText()], {
               type: "text/plain;charset=utf-8",
             });
@@ -417,10 +395,37 @@ export default function Prompts() {
             link.click();
             URL.revokeObjectURL(url);
           }}
-          ref={dropzoneRef}
-          className="w-full border border-dashed py-2 pointer-events-auto m-2 rounded-md px-2 font-medium text-slate-700 ring-1 ring-slate-700/10 hover:bg-slate-50"
+          className="w-full py-2 pointer-events-auto m-2 rounded-md px-2 font-medium text-slate-700 shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50"
         >
           Backup
+        </div>
+        <div
+          onClick={() => {
+            const input = document.createElement("input");
+            input.type = "file";
+            input.addEventListener("change", (event) => {
+              const file = (event.target as any).files[0];
+              handleFile(file);
+            });
+            input.click();
+          }}
+          ref={dropzoneRef}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          className="w-full border border-dashed border-slate-300 border-slate-500 py-2 pointer-events-auto m-2 rounded-md px-2 font-medium text-slate-700 ring-1 ring-slate-700/10 hover:bg-slate-50"
+        >
+          Import (from Json File)
+        </div>
+        <div
+          onClick={() => {
+            navigator.clipboard.readText().then((item) => {
+              handleImport(item);
+            });
+          }}
+          className="w-full py-2 pointer-events-auto m-2 rounded-md px-2 font-medium text-slate-700 shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50"
+        >
+          Import (from Clipboard)
         </div>
       </div>
     </div>

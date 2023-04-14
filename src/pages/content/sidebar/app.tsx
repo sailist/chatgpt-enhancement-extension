@@ -1,16 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 
-// import App from './components/prompt';
-import {
-  GPTGroup,
-  GPTPageHandler,
-  MarkdownButton,
-  PDFProcess,
-} from "./trigger";
 import RegPrompts from "@src/pages/options/main/RegPrompts";
 import PromptSelector from "./components/PromptSelector";
-import { divToMarkdown } from "./markdown";
+import { divToMarkdown } from "@common/markdown";
 import { getCurrentTime } from "@src/pages/options/utils";
+import { GPTGroup, GPTPageHandler } from "../inject/page";
+import { PDFProcess } from "../inject/pdfprocess";
+import { MarkdownButton } from "../inject/mdbutton";
+import { MT, sendMessage } from "@src/common/message";
+import { storage } from "@src/common";
+import { SelectionParser } from "../inject/selparser";
+import { isFatherHasClass } from "@src/common/element";
+import { REGEX_GPT_ID } from "@src/common/url";
 
 interface Styles {
   container: React.CSSProperties;
@@ -51,20 +52,23 @@ const styles: Styles = {
 
 const Sidebar: React.FC = () => {
   const [contentVisible, setContentVisible] = useState(false);
-  const [promptHint, setPromptHint] = useState(false);
 
+  const [promptHint, setPromptHint] = useState(false);
   const [textareaPos, setTextareaPos] = useState({ x: 0, y: 0 });
   const [promptFilter, setPromptFilter] = useState("");
   const [selectIndex, setSelectIndex] = useState(0);
   const [selectDown, setSelectDown] = useState(false);
-  const textareaRef = useRef<any>();
   const hintRef = useRef(false);
   const indexRef = useRef(0);
+  const textareaRef = useRef<any>();
 
   useEffect(() => {
     const handler = new GPTPageHandler();
     handler.addChatProcessor(new PDFProcess());
     const mdbt = new MarkdownButton();
+    const selparser = new SelectionParser();
+
+    handler.addMessageProcessor(MT.PARSE_SELECTION, selparser);
     handler.addEventListener("response", mdbt);
     handler.addEventListener("newpage", mdbt);
 
@@ -72,8 +76,23 @@ const Sidebar: React.FC = () => {
     const observer = new MutationObserver(function (mutations) {
       // onSwitchPage
       // onResponse
-      // onStopGeneration
+
       mutations.forEach(function (mutation) {
+        if (
+          mutation.target &&
+          (mutation.target as HTMLElement).tagName != "TEXTAREA" &&
+          isFatherHasClass(mutation.target, "group") &&
+          isFatherHasClass(mutation.target, "result-streaming") &&
+          isFatherHasClass(mutation.target, "text-base")
+        ) {
+          // 获取所有 .group 类的元素
+          const groups = document.querySelectorAll(".group");
+
+          // 获取最后一个 .group 类的元素
+          const group_node = groups[groups.length - 1];
+          handler.onProgress(new GPTGroup(group_node as HTMLDivElement));
+        }
+
         if (mutation.target instanceof HTMLElement) {
           if (mutation.target.classList) {
             let markdown_node = null;
@@ -209,6 +228,7 @@ const Sidebar: React.FC = () => {
 
     // 开始监听目标元素变化
     observer.observe(document.body, config);
+    sendMessage<string, string>({ type: MT.REGISTER_GPT });
   }, []);
 
   const handleMouseEnter = () => {
@@ -243,16 +263,26 @@ const Sidebar: React.FC = () => {
   };
 
   const savePageById = (id: string) => {
-    chrome.storage.local.get({ chatgptHistoryIds: [] }, (item) => {
+    console.log(id);
+    storage.get<string[]>("chatgptHistoryIds", []).then((historyIds) => {
       const markdown = prepareText();
-      const historyIds: string[] = item["chatgptHistoryIds"];
       if (!historyIds.includes(id)) {
         historyIds.push(id);
       }
+      let title = "";
+      if (document.querySelector(".bg-gray-800")) {
+        title = document.querySelector(".bg-gray-800").textContent;
+      }
+
       const res = { chatgptHistoryIds: historyIds };
-      res[id] = { chatid: id, content: markdown };
-      chrome.storage.local.set(res, () => {
-        console.log("save succeed.");
+      res[id] = {
+        chatid: id,
+        content: markdown,
+        title: title,
+      };
+
+      storage.sets(res).then(() => {
+        console.log("Saved");
       });
     });
   };
@@ -260,6 +290,7 @@ const Sidebar: React.FC = () => {
   return (
     <>
       <div
+        id="prompt-hint"
         style={{
           display: promptHint ? undefined : "none",
           position: "absolute",
@@ -283,13 +314,13 @@ const Sidebar: React.FC = () => {
           }}
         />
       </div>
-      <div id="sticky-button" className="absolute top-4 right-4">
+      <div id="sticky-button" className="absolute top-4 right-4 text-sm">
         <div className="flex flex-row">
           <div
             onClick={() => {
               navigator.clipboard.writeText(prepareText());
             }}
-            className="w-32 py-2 pointer-events-auto m-2 rounded-md px-2 font-medium text-slate-700 shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50"
+            className="w-20 py-2 pointer-events-auto bg-white m-2 rounded-md px-2 text-xs text-slate-700 shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50"
           >
             Copy All
           </div>
@@ -297,7 +328,7 @@ const Sidebar: React.FC = () => {
             onClick={() => {
               navigator.clipboard.writeText(prepareText(true));
             }}
-            className="w-40 py-2 pointer-events-auto m-2 rounded-md px-2 font-medium text-slate-700 shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50"
+            className="w-24 py-2 pointer-events-auto bg-white m-2 rounded-md px-2 text-xs text-slate-700 shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50"
           >
             Copy Answer
           </div>
@@ -317,66 +348,63 @@ const Sidebar: React.FC = () => {
                 URL.revokeObjectURL(url);
               }
 
-              const regex =
-                /https:\/\/chat\.openai\.com\/chat\/([a-zA-Z0-9_-]+)$/;
-              const match = document.URL.match(regex);
+              const match = document.URL.match(REGEX_GPT_ID);
               if (match) {
                 download(match[1]);
               } else {
-                chrome.runtime.sendMessage("get-new-id", (message) => {
-                  if (message.code === 200) {
-                    download(message.msg);
+                sendMessage<string, string>({ type: MT.GET_RESPONSE_ID }).then(
+                  (message) => {
+                    if (message.code === 200) {
+                      download(message.payload);
+                    }
                   }
-                });
+                );
               }
-              console.log(document.URL);
             }}
-            className="w-32 py-2 pointer-events-auto mx-2 my-1 rounded-md px-2 font-medium text-slate-700 shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50"
+            className="w-20 py-2 pointer-events-auto bg-white mx-2 my-1 rounded-md px-2 text-xs text-slate-700 shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50"
           >
             Export
           </div>
           <div
             onClick={() => {
-              const regex =
-                /https:\/\/chat\.openai\.com\/chat\/([a-zA-Z0-9_-]+)$/;
-              const match = document.URL.match(regex);
+              const match = document.URL.match(REGEX_GPT_ID);
+              console.log(match);
               if (match) {
                 savePageById(match[1]);
               } else {
-                chrome.runtime.sendMessage("get-new-id", (message) => {
-                  if (message.code === 200) {
-                    savePageById(message.msg);
+                sendMessage<string, string>({ type: MT.GET_RESPONSE_ID }).then(
+                  (message) => {
+                    if (message.code === 200) {
+                      savePageById(message.payload);
+                    }
                   }
-                });
+                );
               }
-              console.log(document.URL);
             }}
-            className="w-40 py-2 pointer-events-auto mx-2 my-1 rounded-md px-2 font-medium text-slate-700 shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50"
+            className="w-24 py-2 pointer-events-auto bg-white mx-2 my-1 rounded-md px-2 text-xs text-slate-700 shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50"
           >
-            Save to History
+            Save Dialogue
           </div>
         </div>
       </div>
       <div
+        id="reg-prompt-sidebar"
         className="fixed right-[-25px] top-32"
         style={styles.container}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
         <div
-          className="fixed right-0 top-32 mr-1 "
+          className="fixed right-0 top-32 mr-1 w-1/3 h-auto"
           style={{
             ...styles.content,
             ...(contentVisible && styles.contentVisible),
           }}
         >
-          {/* <Example></Example> */}
-          {/* <App></App> */}
           <RegPrompts
             sidebar
             onSelectChange={(prompt) => {
-              chrome.storage.local.set({ currentRegPrompt: prompt }, () => {});
-              console.log("设置 currentRegPrompt");
+              storage.set("currentRegPrompt", prompt);
             }}
           ></RegPrompts>
         </div>
