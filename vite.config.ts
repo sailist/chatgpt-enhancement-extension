@@ -10,10 +10,10 @@ const root = resolve(__dirname, "src");
 const pagesDir = resolve(root, "pages");
 const commonDir = resolve(root, "common");
 const assetsDir = resolve(root, "assets");
-const outDir = resolve(__dirname, "dist");
+const isDev = process.env.__DEV__ === "true";
+const outDir = resolve(__dirname, isDev ? "out" : "dist");
 const publicDir = resolve(__dirname, "public");
 
-const isDev = process.env.__DEV__ === "true";
 const isProduction = !isDev;
 
 // ENABLE HMR IN BACKGROUND SCRIPT
@@ -32,14 +32,14 @@ export default defineConfig({
     react(),
     makeManifest(manifest, {
       isDev,
-      contentScriptCssKey: regenerateCacheInvalidationKey(),
+      contentScriptCssKey: "",
     }),
     customDynamicImport(),
     addHmr({ background: enableHmrInBackgroundScript, view: true }),
   ],
   publicDir,
   esbuild: {
-    drop: ["console", "debugger"],
+    drop: isDev ? [] : ["console", "debugger"],
   },
   build: {
     outDir,
@@ -74,7 +74,7 @@ export default defineConfig({
           const assetFolder = dir.split("/").at(-1);
           const name = assetFolder + firstUpperCase(_name);
           if (name === "contentStyle") {
-            return `assets/css/contentStyle${cacheInvalidationKey}.chunk.css`;
+            return `assets/css/contentStyle.chunk.css`;
           }
           return `assets/[ext]/${name}.chunk.[ext]`;
         },

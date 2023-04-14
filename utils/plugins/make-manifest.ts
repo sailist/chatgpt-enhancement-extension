@@ -7,6 +7,7 @@ import ManifestParser from "../manifest-parser";
 const { resolve } = path;
 
 const distDir = resolve(__dirname, "..", "..", "dist");
+const outDir = resolve(__dirname, "..", "..", "out");
 const publicDir = resolve(__dirname, "..", "..", "public");
 
 export default function makeManifest(
@@ -22,9 +23,9 @@ export default function makeManifest(
     // Naming change for cache invalidation
     if (config.contentScriptCssKey) {
       manifest.content_scripts.forEach((script) => {
-        script.css = script.css.map((css) =>
-          css.replace("<KEY>", config.contentScriptCssKey)
-        );
+        // script.css = script.css.map((css) =>
+        //   // css.replace("<KEY>", config.contentScriptCssKey)
+        // );
       });
     }
 
@@ -40,14 +41,15 @@ export default function makeManifest(
     name: "make-manifest",
     buildStart() {
       if (config.isDev) {
-        makeManifest(distDir);
+        makeManifest(outDir);
       }
     },
     buildEnd() {
       if (config.isDev) {
         return;
       }
-      makeManifest(publicDir);
+      makeManifest(distDir);
+      // makeManifest(publicDir);
     },
   };
 }

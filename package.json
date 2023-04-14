@@ -8,7 +8,7 @@
     "url": "https://github.com/sailist/chatgpt-enhancement-extension"
   },
   "scripts": {
-    "build": "vite build --outDir dist && zip -r dist.zip ./dist/*",
+    "build": "rm -rf ./dist && vite build --outDir dist && zip -r dist.zip ./dist/*",
     "build:watch": "cross-env __DEV__=true vite build --watch --outDir out",
     "build:hmr": "rollup --config utils/reload/rollup.config.ts",
     "wss": "node utils/reload/initReloadServer.js",
