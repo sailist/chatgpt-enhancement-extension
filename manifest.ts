@@ -13,10 +13,15 @@ const manifest: chrome.runtime.ManifestV3 = {
     service_worker: "src/pages/background/index.js",
     type: "module",
   },
-  // action: {
-  //   default_popup: "src/pages/popup/index.html",
-  //   default_icon: "icon-32.png",
-  // },
+  action: {
+    default_popup: "src/pages/popup/index.html",
+
+    default_icon: {
+      "16": "icon-unava-16.png",
+      "32": "icon-unava-32.png",
+    },
+  },
+
   // chrome_url_overrides: {
   //   newtab: "src/pages/newtab/index.html",
   // },
@@ -26,17 +31,29 @@ const manifest: chrome.runtime.ManifestV3 = {
   },
   content_scripts: [
     {
-      matches: ["https://chat.openai.com/*", "https://freechatgpt.chat/*"],
+      // matches: ["http://*/*", "https://*/*", "<all_urls>"],
+      matches: ["<all_urls>"],
       js: ["src/pages/content/index.js"],
       // KEY for cache invalidation
-      css: [
-        "assets/css/contentStyle<KEY>.chunk.css",
-        "assets/css/optionsIndex.chunk.css",
-      ],
+      css: ["assets/css/contentStyle<KEY>.chunk.css"],
+    },
+    {
+      matches: ["https://chat.openai.com/*"],
+      css: ["assets/css/optionsIndex.chunk.css"],
     },
   ],
+
   // devtools_page: "src/pages/devtools/index.html",
-  permissions: ["storage", "unlimitedStorage", "webRequest"],
+  permissions: [
+    "contextMenus", // Create context menu, click to send selection text,
+    "scripting", // inject content scripts
+    // sendMessage from background to tab, create/update active tab, listen update and remove event for chatgpt page detection
+    "tabs",
+    "activeTab", // query active tab
+    "webRequest", // detect request url for id
+    "storage", // storage dialogue history
+    "unlimitedStorage",
+  ],
   web_accessible_resources: [
     {
       resources: [
@@ -44,6 +61,10 @@ const manifest: chrome.runtime.ManifestV3 = {
         "assets/css/*.css",
         "icon-128.png",
         "icon-32.png",
+        "icon-ava-32.png",
+        "icon-ava-16.png",
+        "icon-unava-32.png",
+        "icon-unava-16.png",
       ],
       matches: ["*://*/*"],
     },
