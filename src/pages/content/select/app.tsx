@@ -242,7 +242,8 @@ const SelectAnalayse: React.FC = () => {
           track("Failed cross-prompt", errorMessage);
         }
       })
-      .catch(() => {
+      .catch((e) => {
+        console.log(e);
         setStatus("error");
         setLatestError({
           timestamp: new Date().getTime(),
@@ -304,41 +305,10 @@ const SelectAnalayse: React.FC = () => {
             ></div>
           ) : (
             <div
-              style={{
-                maxHeight: "60%",
-              }}
-              className="z-[10000000] fixed text-gray-700 overflow-y-auto top-0 right-0 w-1/5 border-4 border-gray-200 m-2 rounded"
+              style={{ maxHeight: "60%" }}
+              className="z-[10000000] fixed top-16 right-4 flex flex-col w-1/5 shadow-md"
             >
-              <div
-                ref={htmlRef}
-                className={clsx(
-                  "divide-y bg-white w-full overflow-y-auto",
-                  style["markdown-response"]
-                )}
-              >
-                {allResponse.map((item, index) => {
-                  if (!item) {
-                    return <></>;
-                  }
-                  return (
-                    <div key={index} className="w-full h-full">
-                      <div className="text-base  px-2 gap-4 md:gap-6 md:max-w-2xl lg:max-w-xl xl:max-w-3xl p-4 md:py-6 flex m-auto">
-                        <div
-                          dangerouslySetInnerHTML={{ __html: item.prompt }}
-                        ></div>
-                      </div>
-                      <div className="bg-gray-50 px-2  text-base gap-4 md:gap-6 md:max-w-2xl lg:max-w-xl xl:max-w-3xl p-4 md:py-6 flex m-auto">
-                        <div
-                          dangerouslySetInnerHTML={{
-                            __html: item.content,
-                          }}
-                        ></div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-              <div className="flex flex-row float-right">
+              <div className="flex flex-row float-right ">
                 <Button
                   content="clear"
                   onClick={() => {
@@ -375,6 +345,43 @@ const SelectAnalayse: React.FC = () => {
                     track("Click select-hide button", {});
                   }}
                 />
+              </div>
+              <div
+                ref={htmlRef}
+                style={{
+                  maxHeight: "60%",
+                }}
+                className="text-gray-700 overflow-y-auto  relative h-full border-4 border-gray-200 rounded"
+              >
+                <div
+                  className={clsx(
+                    "divide-y bg-white w-full overflow-y-auto",
+                    style["markdown-response"]
+                  )}
+                >
+                  {status === "wait" && <div>Loading...</div>}
+                  {allResponse.map((item, index) => {
+                    if (!item) {
+                      return <></>;
+                    }
+                    return (
+                      <div key={index} className="w-full h-full">
+                        <div className="text-base  px-2 gap-4 md:gap-6 md:max-w-2xl lg:max-w-xl xl:max-w-3xl p-4 md:py-6 flex m-auto">
+                          <div
+                            dangerouslySetInnerHTML={{ __html: item.prompt }}
+                          ></div>
+                        </div>
+                        <div className="bg-gray-50 px-2  text-base gap-4 md:gap-6 md:max-w-2xl lg:max-w-xl xl:max-w-3xl p-4 md:py-6 flex m-auto">
+                          <div
+                            dangerouslySetInnerHTML={{
+                              __html: item.content,
+                            }}
+                          ></div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           )}
