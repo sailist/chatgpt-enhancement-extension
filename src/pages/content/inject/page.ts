@@ -38,7 +38,7 @@ export class GPTGroup {
 export class GPTPageHandler {
   groups: GPTGroup[] = [];
   lastGroup?: GPTGroup;
-
+  status: "idle" | "response" = "idle";
   textarea?: HTMLTextAreaElement;
   sendBt?: HTMLButtonElement;
   newPageBt?: HTMLLinkElement;
@@ -136,14 +136,11 @@ export class GPTPageHandler {
   send(value: string) {
     // console.log("send\n" + value);
     // console.log(this);
-    if (this.textarea && this.sendBt) {
+    if (this.textarea && this.sendBt && this.status === "idle") {
       this.textarea.value = value;
-      // this.sendBt.click();
-      const enterKeyEvent = new KeyboardEvent("keydown", {
-        keyCode: 13,
-        key: "Enter",
-      });
-      this.textarea.dispatchEvent(enterKeyEvent);
+      this.sendBt.disabled = false;
+      this.sendBt.click();
+      this.status = "response";
     } else {
       console.log(this);
     }
@@ -159,6 +156,7 @@ export class GPTPageHandler {
     this.eventListeners["newpage"]?.forEach((item) => {
       item.onSwitchPage(old);
     });
+    this.status = "idle";
   }
   onProgress(gptGroup: GPTGroup) {
     this.currentChatHandler?.onProgress(gptGroup);
@@ -173,12 +171,14 @@ export class GPTPageHandler {
     this.eventListeners["response"]?.forEach((item) => {
       item.onResponse(gptGroup);
     });
+    this.status = "idle";
   }
   onStopGeneration() {
     this.currentChatHandler?.onStopGeneration();
     this.eventListeners["stop generation"]?.forEach((item) => {
       item.onStopGeneration();
     });
+    this.status = "idle";
   }
   onTextareaCreate(el: HTMLTextAreaElement) {
     this.textarea = el;
