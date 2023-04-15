@@ -206,6 +206,7 @@ const Sidebar: React.FC = () => {
               });
               console.log("onTextareaCreate");
               handler.onTextareaCreate(textarea as HTMLTextAreaElement);
+              sendMessage<string, string>({ type: MT.REGISTER_GPT });
             } else if (mutation.target.tagName.toLowerCase() == "nav") {
               console.log("onSwitchPage");
               console.log(mutation);
@@ -229,7 +230,6 @@ const Sidebar: React.FC = () => {
 
     // 开始监听目标元素变化
     observer.observe(document.body, config);
-    sendMessage<string, string>({ type: MT.REGISTER_GPT });
   }, []);
 
   const handleMouseEnter = () => {
