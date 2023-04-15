@@ -10,7 +10,7 @@ const root = resolve(__dirname, "src");
 const pagesDir = resolve(root, "pages");
 const commonDir = resolve(root, "common");
 const assetsDir = resolve(root, "assets");
-const isDev = process.env.__DEV__ === "true";
+export const isDev = process.env.__DEV__ === "true";
 const outDir = resolve(__dirname, isDev ? "out" : "dist");
 const publicDir = resolve(__dirname, "public");
 
