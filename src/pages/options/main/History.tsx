@@ -4,6 +4,7 @@ import JSZip from "jszip";
 import { storage } from "@src/common";
 import SearchBar from "@src/common/components/SearchBar";
 import { track } from "@src/common/track";
+import produce from "immer";
 
 type PromptValue = {
   chatid: string;
@@ -97,8 +98,10 @@ export default function History() {
       const newPromptKeys = prompt_keys.filter((item) => item !== title);
       storage.remove(_(title)).then(() => {
         storage.set("prompt_keys", newPromptKeys).then(() => {
-          const newPrompts = Object.assign({}, prompts);
-          delete newPrompts[_(title)];
+          const newPrompts = produce(prompts, (draft) => {
+            delete draft[_(title)];
+          });
+
           setPrompts(newPrompts);
         });
       });

@@ -5,6 +5,7 @@ import { storage } from "@src/common";
 import SearchBar from "@src/common/components/SearchBar";
 import Button from "@src/common/components/Button";
 import { track } from "@src/common/track";
+import produce from "immer";
 
 const CONST_KEYNAME = "reg_prompt_key";
 
@@ -117,7 +118,7 @@ export default function RegPrompts(props: PromptsProp) {
             if (currentRegPrompt) {
               setMenuSelected(currentRegPrompt.title);
             } else if (Object.keys(items).length > 0) {
-              const newPrompts = Object.assign({}, items);
+              const newPrompts = items;
               setPrompts(newPrompts);
               setMenuSelected(items[Object.keys(items)[0]].title);
             } else {
@@ -167,8 +168,9 @@ export default function RegPrompts(props: PromptsProp) {
         const newPromptKeys = reg_prompt_keys.filter((item) => item !== title);
         storage.remove(_(title)).then(() => {
           storage.sets({ reg_prompt_keys: newPromptKeys }).then(() => {
-            const newPrompts = Object.assign({}, prompts);
-            delete newPrompts[_(title)];
+            const newPrompts = produce(prompts, (draft) => {
+              delete prompts[_(title)];
+            });
             setPrompts(newPrompts);
           });
         });

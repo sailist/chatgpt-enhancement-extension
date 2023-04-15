@@ -63,6 +63,7 @@ export class SelectionParser implements GPTEventMessageListener<any, any> {
   }
 
   onStopGeneration(): void {}
-  onTextareaCreate(el: HTMLTextAreaElement): void {}
+  onTextareaCreate(el: HTMLTextAreaElement): void {
+  }
   onSendStart(): void {}
 }
