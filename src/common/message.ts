@@ -5,8 +5,8 @@ export interface ExMessage<T> {
   msg?: string;
 }
 
-export function SUCCEED_MSG(): ExMessage<any> {
-  return { code: 200, type: "success_response" };
+export function SUCCEED_MSG(msg?: string): ExMessage<any> {
+  return { code: 200, type: msg || "success_response" };
 }
 export function FAIL_MSG(
   msg: string = "failed",
@@ -21,7 +21,7 @@ export const MessageType = {
   GET_RESPONSE_ID: "get-new-id",
   REGISTER_GPT: "register-chatgpt-page",
   GET_GPT_TABID: "get-chatgpt-tabid",
-  ACTIVE_GPTPAGE :"active-chatgpt-page",
+  ACTIVE_GPTPAGE: "active-chatgpt-page",
 };
 export const MT = MessageType; // alias
 

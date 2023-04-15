@@ -30,9 +30,9 @@ export function init() {
 export function track(key: string, value: { [key: string]: any }) {
   if (enabled) {
     mixpanel.track(key, value);
-    console.log("track");
+    console.log("track " + key);
   } else {
-    console.log("disabled track");
+    console.log("disabled track " + key);
   }
 }
 
