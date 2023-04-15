@@ -72,7 +72,9 @@ Select in any page, and prompt them:
 
 ## Install from Chrome Web Store
 
-> currently pending review
+Due to the fast updates in recent times but a longer review process, the version in the store is far behind the GitHub version. If possible, please install the version distributed on GitHub.
+
+[web store](https://chrome.google.com/webstore/detail/fdbinkcfdihppebpojopiljcmekfedkg?hl=en&authuser=0)
 
 ## Install from crx
 

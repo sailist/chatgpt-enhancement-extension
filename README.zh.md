@@ -65,7 +65,9 @@
 
 ## 从 Chrome 网上应用店安装
 
-> 目前正在审核中
+因为近期更新较快，但审核流程较长的原因，商店的版本远低于 Github 版本，如果有条件，请尽量安装 Github 分发的版本。
+
+[web store](https://chrome.google.com/webstore/detail/fdbinkcfdihppebpojopiljcmekfedkg?hl=en&authuser=0)
 
 ## 从 crx 安装
 
