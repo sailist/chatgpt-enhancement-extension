@@ -1,9 +1,9 @@
 import * as fs from "fs";
+import produce from "immer";
 import * as path from "path";
 import colorLog from "../log";
 import { PluginOption } from "vite";
 import ManifestParser from "../manifest-parser";
-
 const { resolve } = path;
 
 const distDir = resolve(__dirname, "..", "..", "dist");
@@ -19,7 +19,6 @@ export default function makeManifest(
       fs.mkdirSync(to);
     }
     const manifestPath = resolve(to, "manifest.json");
-
     // Naming change for cache invalidation
     if (config.contentScriptCssKey) {
       manifest.content_scripts.forEach((script) => {
@@ -28,10 +27,15 @@ export default function makeManifest(
         // );
       });
     }
-
+    let newManifest = manifest;
+    if (config.isDev) {
+      newManifest = produce(manifest, (draft) => {
+        draft.name = draft.name + " (Dev)";
+      });
+    }
     fs.writeFileSync(
       manifestPath,
-      ManifestParser.convertManifestToString(manifest)
+      ManifestParser.convertManifestToString(newManifest)
     );
 
     colorLog(`Manifest file copy complete: ${manifestPath}`, "success");
