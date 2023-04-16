@@ -1,5 +1,7 @@
 import { Readability } from "@mozilla/readability";
+import { storage } from "@src/common";
 import {
+  ExMessageCallback,
   FAIL_MSG,
   MT,
   PARSE_SELECTION,
@@ -11,35 +13,30 @@ import {
 import { track } from "@src/common/track";
 import { REGEX_GPTURL } from "@src/common/url";
 import reloadOnUpdate from "virtual:reload-on-update-in-background-script";
+import { DEFAULT_SETTINGS, SettingRecord } from "../options/main/Setting";
 
 reloadOnUpdate("pages/background");
-
-/**
- * Extension reloading is necessary because the browser automatically caches the css.
- * If you do not use the css of the content script, please delete it.
- */
 
 console.log("background loaded 2023-04-11-20-33");
 let initialized = false;
 
-function initialize() {
-  const inMemory = {};
+const inMemory = {};
+const status: { tabid?: number; pendingMessage? } = {};
 
-  const status: { tabid?: number; pendingMessage? } = {};
-
-  const setIcon = (ava: boolean) => {
-    const avaStr = ava ? "ava" : "unava";
-    chrome.action.setIcon(
-      {
-        path: {
-          "32": `/icon-${avaStr}-32.png`,
-          "16": `/icon-${avaStr}-16.png`,
-        },
+const setIcon = (ava: boolean) => {
+  const avaStr = ava ? "ava" : "unava";
+  chrome.action.setIcon(
+    {
+      path: {
+        "32": `/icon-${avaStr}-32.png`,
+        "16": `/icon-${avaStr}-16.png`,
       },
-      () => {}
-    );
-  };
+    },
+    () => {}
+  );
+};
 
+function initialize() {
   addMessageListener<any, any>((message, sender, sendResponse) => {
     if (message.type === MT.GET_RESPONSE_ID) {
       if (sender.tab && inMemory[sender.tab.id]) {
@@ -255,6 +252,73 @@ function initialize() {
       );
     }
     track("installed", { details });
+  });
+
+  chrome.omnibox.setDefaultSuggestion({
+    description: "Promp in ChatGPT '%s'",
+  });
+
+  chrome.omnibox.onInputEntered.addListener(function (text) {
+    const gptTabId = status["tabid"];
+
+    storage
+      .get<SettingRecord>(
+        "settingStrOmniboxPromp",
+        DEFAULT_SETTINGS["settingStrOmniboxPromp"]
+      )
+      .then((record) => {
+        const prompt = record.string;
+        const message: PARSE_SELECTION = {
+          payload: { prompt: prompt, content: text },
+          type: MT.PARSE_SELECTION,
+        };
+
+        if (gptTabId) {
+          sendTabMessage<PARSE_SELECTION["payload"], any>(
+            gptTabId,
+            message
+          ).then((message) => {
+            console.log("send page question");
+          });
+        } else {
+          chrome.tabs
+            .query({ url: "https://chat.openai.com/*" })
+            .then((tabs) => {
+              if (tabs.length > 0) {
+                status.tabid = tabs[0].id;
+                sendTabMessage<PARSE_SELECTION["payload"], any>(
+                  status.tabid,
+                  message
+                )
+                  .then((message) => {
+                    console.log("send page question");
+                  })
+                  .catch(() => {
+                    status.pendingMessage = message;
+                    chrome.tabs.reload(status.tabid);
+                  })
+                  .finally(() => {
+                    chrome.tabs
+                      .update(status.tabid, { active: true })
+                      .then(() => {
+                        console.log(status);
+                      })
+                      .catch(() => {
+                        console.log("any error");
+                      });
+                  });
+                track("Find unconnected chatgpt page", {});
+              } else {
+                status.pendingMessage = message;
+                chrome.tabs.create({
+                  url: "https://chat.openai.com/",
+                  active: true,
+                });
+                track("Create new chatgpt page", {});
+              }
+            });
+        }
+      });
   });
 }
 if (!initialized) {
