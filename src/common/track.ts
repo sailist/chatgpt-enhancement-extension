@@ -19,7 +19,7 @@ export function init() {
       if (row.boolean) {
         // Project Token
         mixpanel.init("01ecd077ae10ea5375bd924961fc6aed", {
-          debug: import.meta.env.DEV,
+          debug: import.meta.env.MODE === "dev",
           ignore_dnt: true,
         });
         mixpanel.identify("sailist@outlook.com");
