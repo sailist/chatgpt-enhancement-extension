@@ -5,7 +5,7 @@
   - 搜索文本的 Prompt 可以在 Settings 中设置
 - 优化了 Settings 中的部分 UI
 
-
+![](images/omnibox-1.png)
 
 # 2023.04.15
 
