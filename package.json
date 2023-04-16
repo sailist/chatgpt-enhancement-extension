@@ -9,7 +9,7 @@
   },
   "scripts": {
     "build": "rm -rf ./dist && vite build --outDir dist && zip -r dist.zip ./dist/*",
-    "build:watch": "cross-env __DEV__=true vite build --watch --outDir out",
+    "build:watch": "cross-env __DEV__=true vite build --mode dev --watch --outDir out",
     "build:hmr": "rollup --config utils/reload/rollup.config.ts",
     "wss": "node utils/reload/initReloadServer.js",
     "dev": "npm run build:hmr && (run-p wss build:watch)",
