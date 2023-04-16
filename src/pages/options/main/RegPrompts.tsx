@@ -134,9 +134,14 @@ export default function RegPrompts(props: PromptsProp) {
         }
         promise.then((items) => {
           console.log("reg-prompts", items);
+
           setPrompts(items);
           if (sidebar) {
-            setMenuSelected(currentRegPrompt.title);
+            if (!items[_(currentRegPrompt.title)]) {
+              setMenuSelected(items[Object.keys(items)[0]].title);
+            } else {
+              setMenuSelected(currentRegPrompt.title);
+            }
           }
         });
       });
