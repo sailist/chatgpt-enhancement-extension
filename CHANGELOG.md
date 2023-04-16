@@ -4,6 +4,7 @@
 - 地址栏输入 `. ` 可以使用插件搜索，搜索文本会产生在 ChatGPT 内（但目前 Arc 浏览器不支持这种扩展）
   - 搜索文本的 Prompt 可以在 Settings 中设置
 - 优化了 Settings 中的部分 UI
+- [#5](https://github.com/sailist/chatgpt-enhancement-extension/issues/5) bug 修复
 
 ![](images/omnibox-1.png)
 
