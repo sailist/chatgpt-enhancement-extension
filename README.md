@@ -66,7 +66,15 @@ Select in any page, and prompt them:
 
 ![](images/connect-cross-page.gif)
 
+
 > Type `c` to send text directly, type `x` to open the prompt-hint menu. These shortcut can be changed in the `settings` tab of option page.
+
+
+Type `. ` in the address bar (omnibox), then ask question in ChatGPT:
+
+![](images/omnibox-1.png)
+
+> Currently not support Arc browser
 
 # How to install
 

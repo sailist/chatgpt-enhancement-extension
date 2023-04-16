@@ -61,6 +61,12 @@
 
 ![](images/connect-cross-page.gif)
 
+在地址栏键入 `. `，按下回车即可在 ChatGPT 页面提问：
+
+![](images/omnibox-1.png)
+
+> 目前不支持 Arc 浏览器（浏览器层面的问题，暂时无法解决）
+
 # 安装
 
 ## 从 Chrome 网上应用店安装
