@@ -48,7 +48,7 @@ export const DEFAULT_REGPROMPT: RegPrompts = {
     ],
   },
 
-  defaultChinses: {
+  默认: {
     title: "默认",
     prefix: "逐项用中文回答以下问题: ",
     contents: [
@@ -75,10 +75,10 @@ type RegPrompts = {
 
 type RegPromptKeys = string[];
 
-function _(k: string) {
+export function _(k: string) {
   return "regp+" + k;
 }
-function __(k: string[]) {
+export function __(k: string[]) {
   return k.map((item) => _(item));
 }
 
@@ -104,26 +104,39 @@ export default function RegPrompts(props: PromptsProp) {
 
   const [filter, setFilter] = useState("");
 
-  const [prompts, setPrompts] = useState<RegPrompts>(DEFAULT_REGPROMPT);
+  const [prompts, setPrompts] = useState<RegPrompts>({});
 
   useEffect(() => {
     storage
       .gets<{
         reg_prompt_keys: RegPromptKeys;
         currentRegPrompt: RegPromptValue;
-      }>({ reg_prompt_keys: ["default"], currentRegPrompt: null })
+      }>({ reg_prompt_keys: [], currentRegPrompt: null })
       .then(({ reg_prompt_keys, currentRegPrompt }) => {
-        storage.gets<RegPrompts>(__(reg_prompt_keys)).then((items) => {
+        console.log("reg_prompt_keys", reg_prompt_keys);
+        let promise = null;
+        if (reg_prompt_keys.length === 0) {
+          const res = {};
+          Object.keys(DEFAULT_REGPROMPT).forEach((item) => {
+            res[_(item)] = DEFAULT_REGPROMPT[item];
+          });
+          promise = storage
+            .sets({
+              reg_prompt_keys: Object.keys(DEFAULT_REGPROMPT),
+              ...res,
+              currentRegPrompt: Object.keys(DEFAULT_REGPROMPT)[0],
+            })
+            .then(() => {
+              return storage.gets<RegPrompts>(__(reg_prompt_keys));
+            });
+        } else {
+          promise = storage.gets<RegPrompts>(__(reg_prompt_keys));
+        }
+        promise.then((items) => {
+          console.log("reg-prompts", items);
+          setPrompts(items);
           if (sidebar) {
-            if (currentRegPrompt) {
-              setMenuSelected(currentRegPrompt.title);
-            } else if (Object.keys(items).length > 0) {
-              const newPrompts = items;
-              setPrompts(newPrompts);
-              setMenuSelected(items[Object.keys(items)[0]].title);
-            } else {
-              setMenuSelected("default");
-            }
+            setMenuSelected(currentRegPrompt.title);
           }
         });
       });
@@ -177,11 +190,7 @@ export default function RegPrompts(props: PromptsProp) {
       });
   };
 
-  const setPrompt = (
-    title: string,
-    content: RegPromptValue,
-    oldTitle?: string
-  ) => {
+  const setPrompt = (content: RegPromptValue, oldTitle?: string) => {
     storage
       .get<RegPromptKeys>("reg_prompt_keys", ["default"])
       .then((reg_prompt_keys) => {
@@ -295,7 +304,7 @@ export default function RegPrompts(props: PromptsProp) {
 
     reader.readAsText(file);
   };
-
+  console.log("update", prompts);
   return (
     <div className="flex flex-row">
       {/* 左栏 */}
@@ -370,7 +379,7 @@ export default function RegPrompts(props: PromptsProp) {
 
             if (index === maxIndex && edit !== maxIndex) {
               if (sidebar) {
-                return <></>;
+                return <div key={index}></div>;
               }
               return (
                 <div className="flex p-4 text-center" key={index}>
@@ -436,7 +445,7 @@ export default function RegPrompts(props: PromptsProp) {
                               <>
                                 <div
                                   onClick={() => {
-                                    setPrompt("unused", editContent, title);
+                                    setPrompt(editContent, title);
                                     setEdit(-1);
                                   }}
                                   className="pointer-events-auto ml-4 flex-none rounded-md px-2 py-[0.3125rem] font-medium text-slate-700 shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50"

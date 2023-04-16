@@ -26,13 +26,13 @@ export const EMPTY_PROMPT: PromptValue = {
 
 export const DEFAULT_PROMPT: Prompts = {
   default: { title: "default", content: "I'm chatgpt-enhancement-extension" },
-  defaultCh: { title: "中文", content: "我是 chatgpt-enhancement-extension" },
-  defaultForSelect: {
+  中文: { title: "中文", content: "我是 chatgpt-enhancement-extension" },
+  Explain: {
     title: "Explain",
     content: "Explain this text",
     common: true,
   },
-  defaultForSelectCh: {
+  解释这段话: {
     title: "解释这段话",
     content: "这段话是什么意思",
     common: true,
@@ -46,31 +46,29 @@ export default function Prompts() {
   const [editContent, setEditContent] = useState<PromptValue>(EMPTY_PROMPT);
   const dropzoneRef = useRef<any>();
   const [filter, setFilter] = useState("");
-  const [prompts, setPrompts] = useState<Prompts>(DEFAULT_PROMPT);
+  const [prompts, setPrompts] = useState<Prompts>({});
 
   useEffect(() => {
     storage.get<PromptKeys>("prompt_keys", []).then((prompt_keys) => {
+      let promise = null;
       if (prompt_keys.length === 0) {
         const res = {};
         Object.keys(DEFAULT_PROMPT).forEach((item) => {
-          res[_(DEFAULT_PROMPT[item].title)] = DEFAULT_PROMPT[item];
+          res[_(item)] = DEFAULT_PROMPT[item];
         });
-        storage.sets(res).then(() => {
-          storage.gets(__(prompt_keys)).then((items: Prompts) => {
-            if (Object.keys(items).length > 0) {
-              const newPrompts = Object.assign({}, items);
-              setPrompts(newPrompts);
-            }
+        prompt_keys = Object.keys(DEFAULT_PROMPT);
+        console.log("prompt_keys", res);
+        promise = storage
+          .sets({ prompt_keys: prompt_keys, ...res })
+          .then(() => {
+            return storage.gets(__(prompt_keys));
           });
-        });
       } else {
-        storage.gets(__(prompt_keys)).then((items: Prompts) => {
-          if (Object.keys(items).length > 0) {
-            const newPrompts = Object.assign({}, items);
-            setPrompts(newPrompts);
-          }
-        });
+        promise = storage.gets(__(prompt_keys));
       }
+      promise.then((items: Prompts) => {
+        setPrompts(items);
+      });
     });
   }, []);
 
@@ -101,6 +99,9 @@ export default function Prompts() {
       storage.sets(res).then(() => {
         const newPrompts = Object.assign({}, prompts);
         newPrompts[_(title)] = content;
+        if (oldTitle !== title) {
+          delete newPrompts[_(oldTitle)];
+        }
         setPrompts(newPrompts);
       });
     });
