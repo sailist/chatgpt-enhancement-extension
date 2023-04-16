@@ -5,7 +5,7 @@ import packageJson from "./package.json";
  */
 const manifest: chrome.runtime.ManifestV3 = {
   manifest_version: 3,
-  name: "ChatGPT Enhancement Extension",
+  name: "ChatGPT Enhancement",
   version: packageJson.version,
   description: packageJson.description,
   options_page: "src/pages/options/index.html",
@@ -28,6 +28,7 @@ const manifest: chrome.runtime.ManifestV3 = {
   icons: {
     "128": "icon-128.png",
     "32": "icon-32.png",
+    "16": "icon-16.png",
   },
   content_scripts: [
     {
@@ -42,6 +43,7 @@ const manifest: chrome.runtime.ManifestV3 = {
       css: ["assets/css/optionsIndex.chunk.css"],
     },
   ],
+  omnibox: { keyword: "." },
 
   // devtools_page: "src/pages/devtools/index.html",
   permissions: [
