@@ -31,22 +31,20 @@ const Row = ({ row, onChange }: { row: SettingRecord; onChange? }) => {
     );
   } else if (row.type === "string") {
     return (
-      <div className="flex flex-col">
+      <div className="flex flex-col w-full">
         <div className="block p-2 text-sm font-medium leading-6 text-gray-900">
           {row.name}
         </div>
-        <div className="flex text-center flex-row">
-          <div className="">
-            <input
-              type="text"
-              name="first-name"
-              id="first-name"
-              value={row.string}
-              placeholder={row.desc}
-              onChange={onChange}
-              className="px-2 block w-full placeholder rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-            />
-          </div>
+        <div className="text-center w-full">
+          <input
+            type="text"
+            name="first-name"
+            id="first-name"
+            value={row.string}
+            placeholder={row.desc}
+            onChange={onChange}
+            className="px-2 block w-full placeholder rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+          />
         </div>
       </div>
     );
@@ -75,6 +73,7 @@ type settingKey =
   | "settingStrAPIKey"
   | "settingStrSend"
   | "settingBoolTrackEnable"
+  | "settingStrOmniboxPromp"
   | "settingStrSendWithPromptHint";
 
 export type SettingDict = {
@@ -86,12 +85,13 @@ export const settingKeys: settingKey[] = [
   "settingStrSend",
   "settingBoolTrackEnable",
   "settingStrSendWithPromptHint",
+  "settingStrOmniboxPromp",
 ];
 export const DEFAULT_SETTINGS: SettingDict = {
   settingStrAPIKey: {
     name: "GPTAPI Key",
     type: "string",
-    string: "",
+    string: "You are a Google search bar, help me sovle my asked content: ",
     desc: "(Currently not in use)",
   },
   settingStrSend: {
@@ -110,6 +110,12 @@ export const DEFAULT_SETTINGS: SettingDict = {
     name: "Enable to track your anonymous user data",
     type: "boolean",
     boolean: true,
+    desc: "",
+  },
+  settingStrOmniboxPromp: {
+    name: "Omnibox prefix",
+    type: "string",
+    string: "",
     desc: "",
   },
 };
@@ -172,6 +178,12 @@ export default function Setting() {
         }}
       />
       <Row row={settings["settingStrAPIKey"]} />
+      <Row
+        onChange={(e) => {
+          setSetting("settingStrOmniboxPromp", e.target.value);
+        }}
+        row={settings["settingStrOmniboxPromp"]}
+      />
       <Button
         className={clsx("mt-2")}
         colorClass={diff ? "bg-green-200 hover:bg-green-300" : undefined}
