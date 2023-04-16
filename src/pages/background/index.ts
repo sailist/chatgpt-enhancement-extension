@@ -274,12 +274,20 @@ function initialize() {
         };
 
         if (gptTabId) {
-          sendTabMessage<PARSE_SELECTION["payload"], any>(
-            gptTabId,
-            message
-          ).then((message) => {
-            console.log("send page question");
-          });
+          sendTabMessage<PARSE_SELECTION["payload"], any>(gptTabId, message)
+            .then((message) => {
+              console.log("send page question");
+            })
+            .finally(() => {
+              chrome.tabs
+                .update(status.tabid, { active: true })
+                .then(() => {
+                  console.log(status);
+                })
+                .catch(() => {
+                  console.log("any error");
+                });
+            });
         } else {
           chrome.tabs
             .query({ url: "https://chat.openai.com/*" })
