@@ -88,6 +88,11 @@
 
 > 如果您对加载扩展程序有任何疑问，请尝试向 ChatGPT 提问。
 
+## 额外安装 KeepChatGPT
+
+> 推荐安装 [KeepChatGPT](https://github.com/xcanwin/KeepChatGPT/) 减少 `something went wrong` 错误，提高使用体验。
+
+
 # 开发
 
 ```bash

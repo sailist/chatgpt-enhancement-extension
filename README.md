@@ -66,9 +66,7 @@ Select in any page, and prompt them:
 
 ![](images/connect-cross-page.gif)
 
-
 > Type `c` to send text directly, type `x` to open the prompt-hint menu. These shortcut can be changed in the `settings` tab of option page.
-
 
 Type `. ` in the address bar (omnibox), then ask question in ChatGPT:
 
@@ -96,6 +94,10 @@ In Chrome/Arc/Edge browser:
 - Refresh the ChatGPT page
 
 > If you have any question about load extension, try asking ChatGPT
+
+## Install KeepChatGPT
+
+> It's recommanded to install [KeepChatGPT](https://github.com/xcanwin/KeepChatGPT/) to avoid annoying `something went wrong` errors
 
 # Development
 
