@@ -71,7 +71,7 @@ const manifest: chrome.runtime.ManifestV3 = {
       matches: ["*://*/*"],
     },
   ],
-  host_permissions: ["<all_urls>"],
+  host_permissions: ["https://chat.openai.com/*"],
 };
 
 export default manifest;
