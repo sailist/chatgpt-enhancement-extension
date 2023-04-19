@@ -1,6 +1,6 @@
 {
   "name": "chatgpt-enhancement-extension",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "An all-in-one extension to improve your ChatGPT experience!",
   "license": "MIT",
   "repository": {
@@ -17,6 +17,7 @@
   },
   "type": "module",
   "dependencies": {
+    "@floating-ui/dom": "^1.2.6",
     "@mozilla/readability": "^0.4.4",
     "clsx": "^1.2.1",
     "immer": "^9.0.21",
