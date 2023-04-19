@@ -3,6 +3,7 @@
 - 版本：1.3.3
 - 添加了阅读 PDF 时的中断。通过 Stop、Send "continue"、Send next page 三个按钮，在当前页面阅读结束后载入下一页。
 - 解决了弹出 Prompt hint 时候第二下出现的 bug
+- 限制了 host_permission 权限，用于重新申请上架
 
 # 2023.04.16
 
