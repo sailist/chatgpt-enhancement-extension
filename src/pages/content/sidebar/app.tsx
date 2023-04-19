@@ -305,11 +305,13 @@ const Sidebar: React.FC = () => {
           selectDone={selectDown}
           filter={promptFilter}
           onSelect={(prompt) => {
+            console.log(prompt);
             textareaRef.current.value = prompt;
             setPromptFilter("");
             setSelectDown(false);
             indexRef.current = 0;
             setSelectIndex(0);
+            hintRef.current = false;
             setPromptHint(false);
             textareaRef.current.focus();
           }}

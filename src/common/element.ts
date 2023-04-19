@@ -1,7 +1,7 @@
 export function makeButton(name: string) {
   let bt = document.createElement("button");
   bt.className = "btn relative btn-neutral border-0 md:border";
-  bt.classList.add("bt-" + name);
+  // bt.classList.add("bt-" + name);
   bt.textContent = name;
   bt.style.cursor = "pointer";
   return bt;

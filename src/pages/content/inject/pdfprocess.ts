@@ -1,12 +1,15 @@
 import * as pdfjsLib from "pdfjs-dist";
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.5.141/pdf.worker.min.js";
+
+import { computePosition, autoUpdate, shift } from "@floating-ui/dom";
 import { PDFDocumentProxy } from "pdfjs-dist/types/src/display/api";
 // import { AppState, defaultState } from "./components/prompt";
 import { RegPromptValue } from "@src/pages/options/main/RegPrompts";
 import { GPTEventListener, GPTGroup, GPTPageHandler } from "../inject/page";
 import { storage } from "@src/common";
 import { track } from "@src/common/track";
+import { makeButton } from "@src/common/element";
 
 export class PDFProcess implements GPTEventListener {
   onProgress(gptGroup: GPTGroup): void {}
@@ -16,6 +19,47 @@ export class PDFProcess implements GPTEventListener {
   text?: string[];
   stoped = false;
   process = 0;
+
+  floatcleanup?;
+  callbackGroup: HTMLElement;
+  constructor() {
+    const ctnBt = makeButton("Send 'continue'");
+    const sendPDFBt = makeButton("Send next page");
+    const stopBt = makeButton("Stop");
+    const callback = document.createElement("div");
+    callback.style.display = "none";
+    callback.append(stopBt, ctnBt, sendPDFBt, document.createElement("div"));
+    document.body.appendChild(callback);
+    const that = this;
+    stopBt.addEventListener("click", (e) => {
+      that.stoped = true;
+      callback.style.display = "none";
+      if (that.floatcleanup) {
+        that.floatcleanup();
+        that.floatcleanup = undefined;
+      }
+    });
+    const continueStr = `continue`;
+    ctnBt.addEventListener("click", (e) => {
+      that.gptpage.send(continueStr);
+      callback.style.display = "none";
+      if (that.floatcleanup) {
+        that.floatcleanup();
+        that.floatcleanup = undefined;
+      }
+    });
+    sendPDFBt.addEventListener("click", (e) => {
+      that.process++;
+      that.sendNextPage();
+      callback.style.display = "none";
+      if (that.floatcleanup) {
+        that.floatcleanup();
+        that.floatcleanup = undefined;
+      }
+    });
+    this.callbackGroup = callback;
+    this.callbackGroup.style.position = "absolute";
+  }
 
   onTextareaCreate(el: HTMLTextAreaElement) {
     const that = this;
@@ -72,21 +116,58 @@ export class PDFProcess implements GPTEventListener {
 
   onResponse(gptGroup: GPTGroup) {
     const that = this;
-    that.process++;
+
     setTimeout(() => {
       if (that.pdf) {
-        that.sendNextPage();
+        this.callbackGroup.style.display = "block";
+        this.callbackGroup.lastChild.textContent = `${this.process + 1}/${
+          this.pdf.numPages
+        }`;
+        that.floatcleanup = autoUpdate(
+          gptGroup.markdownRoot,
+          this.callbackGroup,
+          () => {
+            computePosition(gptGroup.response, this.callbackGroup, {
+              placement: "bottom",
+              middleware: [shift({ crossAxis: true })],
+            }).then(({ x, y }) => {
+              Object.assign(this.callbackGroup.style, {
+                left: `${x}px`,
+                top: `${y}px`,
+              });
+            });
+          }
+        );
+        // that.sendNextPage();
       } else if (that.text) {
+        that.process++;
         that.sendNextText();
       }
-    }, 2000);
+    }, 1000);
   }
   onSendStart() {
     // throw new Error("Method not implemented.");
   }
   onStopGeneration() {
-    // throw new Error("Method not implemented.");
-    this.stoped = true;
+    this.callbackGroup.style.display = "block";
+    this.callbackGroup.lastChild.textContent = `${this.process + 1}/${
+      this.pdf.numPages
+    }`;
+    this.floatcleanup = autoUpdate(
+      this.gptpage.lastGroup.markdownRoot,
+      this.callbackGroup,
+      () => {
+        computePosition(this.gptpage.lastGroup.response, this.callbackGroup, {
+          placement: "bottom",
+          middleware: [shift({ crossAxis: true })],
+        }).then(({ x, y }) => {
+          Object.assign(this.callbackGroup.style, {
+            left: `${x}px`,
+            top: `${y}px`,
+          });
+        });
+      }
+    );
   }
   onDropText(file: File) {
     console.log("onDropFile");
@@ -251,7 +332,7 @@ export class PDFProcess implements GPTEventListener {
                 })
                 .join("\n") + "\n";
             prompt_str = `\n${regPrompt.prefix}\n${prompt_str}`;
-            gptPage.send(page_str + prompt_str);
+            gptPage.send(prompt_str + page_str);
           });
       });
     });

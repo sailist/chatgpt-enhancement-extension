@@ -133,6 +133,16 @@ export class GPTPageHandler {
   regenerate(edit?: string) {
     this.lastGroup?.resubmit(edit);
   }
+  
+  paste(value: string) {
+    if (this.textarea && this.sendBt && this.status === "idle") {
+      this.textarea.value = value;
+      this.sendBt.disabled = false;
+    } else {
+      console.log(this);
+    }
+  }
+
   send(value: string) {
     // console.log("send\n" + value);
     // console.log(this);
